@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The linear clock — DIY Raspberry Pi Pico W &amp; PETG Build</title>
-  <meta name="description" content="Open-source DIY Linear Clock inspired by Daylight Machines: Raspberry Pi Pico W, 48 addressable RGB LEDs, 18650 battery pack, and a single-piece PETG enclosure for Bambu Lab A1." />
+  <title>The linear clock — nRF52 &amp; Raspberry Pi DIY Editions</title>
+  <meta name="description" content="Open-source Linear Clock inspired by Daylight Machines in two complete builds: ultra-efficient nRF52832 + Passive RGB custom PCB (1-3 months battery) and beginner-friendly Raspberry Pi Pico 2 W + WS2812B (~1 week battery), both with Bambu Lab A1 PETG enclosures." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@300;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -26,12 +26,12 @@
         <span>linear clock diy</span>
       </a>
       <nav class="site-nav" aria-label="Primary">
-        <a href="#concept">Concept</a>
-        <a href="#simulator">Display modes</a>
-        <a href="#enclosure">3D PETG case</a>
-        <a href="#wiring">Wiring plan</a>
-        <a href="#bom">Parts to buy</a>
-        <a href="#firmware">Firmware</a>
+        <a href="#simulator">Simulator</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#active-case" id="nav-case-link">3D PETG case</a>
+        <a href="#active-wiring" id="nav-wiring-link">Hardware</a>
+        <a href="#active-bom" id="nav-bom-link">Parts (PL)</a>
+        <a href="#active-firmware" id="nav-fw-link">Firmware</a>
       </nav>
     </div>
   </header>
@@ -39,48 +39,38 @@
   <!-- Hero Band -->
   <section id="top" class="hero">
     <div class="container">
-      <h1>The linear clock — DIY build</h1>
-      <p class="hero-subtitle">A new way to track the progress of time — simplified for Raspberry Pi Pico W, 48 RGB LEDs, battery power, and a Bambu Lab A1 PETG enclosure.</p>
+      <h1>The linear clock — DIY editions</h1>
+      <p class="hero-subtitle">A new way to track the progress of time — choose between our ultra-efficient <strong>nRF52</strong> custom PCB (1–3 months battery) or the beginner-friendly <strong>Raspberry Pi Pico 2 W</strong> modular build (~1 week battery).</p>
     </div>
   </section>
 
+  <!-- 2-Tab Solution Switcher (nRF52 default | Raspberry) -->
+  <div id="solutions" class="solution-tabs-bar">
+    <div class="container">
+      <div class="solution-tabs" role="tablist" aria-label="Hardware Solutions">
+        <button type="button" id="tab-nrf52" class="solution-tab" role="tab" aria-selected="true" aria-controls="panel-nrf52" data-solution="nrf52">
+          <span class="solution-tab-title">nRF52 Solution <span class="solution-tab-badge">1–3 MONTHS · DEFAULT</span></span>
+          <span class="solution-tab-sub">48× Passive 1615 SMD RGB + IS31FL3733 + nRF52832 BLE + Direct 3.7V 1× 18650 (36 mm slim PETG)</span>
+        </button>
+        <button type="button" id="tab-raspberry" class="solution-tab" role="tab" aria-selected="false" aria-controls="panel-raspberry" data-solution="raspberry">
+          <span class="solution-tab-title">Raspberry Solution <span class="solution-tab-badge">~7–10 DAYS · DIY MODULES</span></span>
+          <span class="solution-tab-sub">Raspberry Pi Pico 2 W + WS2812B 144 LED/m + 2× 18650 UPS + IRLZ44N Night Cut (52 mm PETG)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <main>
-    <!-- Section 1: Concept & Analysis -->
-    <section id="concept" class="section">
+    <!-- Shared Hero Product Render -->
+    <section class="section" style="padding-block-end: 1.5rem;">
       <div class="container">
         <div class="media-frame">
           <img src="./assets/render-hero.png" alt="3D-printed matte slate-grey PETG Linear Clock glowing with a green-to-amber 48-LED progress bar on an oak desk" width="1400" height="788" fetchpriority="high" />
         </div>
-
-        <div class="caption-row">
-          <h2>Why a linear clock</h2>
-          <div>
-            <p>Inspired by <a href="https://daylightmachines.com/products/linear-clock/" target="_blank" rel="noopener">Daylight Machines</a>, a linear clock replaces digits and hands with a single horizontal bar of <strong>48 RGB LED blocks</strong> — two per hour from 00:00 to 24:00. Each 30-minute block illuminates gradually as time passes, giving you both minute-level accuracy and an immediate sense of how much of your day remains.</p>
-            <p>To make this build as simple, reliable, and affordable as possible (~$35 total), we refined the electronics down to <strong>three off-the-shelf modules</strong> and <strong>four wires</strong>, packaged inside a single-piece 250&nbsp;mm PETG case engineered specifically for the <strong>Bambu Lab A1</strong> build plate.</p>
-          </div>
-        </div>
-
-        <div class="principles-grid">
-          <article class="principle-card">
-            <div class="principle-num">01 / CONTROLLER</div>
-            <h3>Raspberry Pi Pico 2 W (Eco Sleep)</h3>
-            <p>Underclocked to 48&nbsp;MHz with Wi-Fi OFF and <code>machine.lightsleep()</code> between 15-second updates (~1.8&nbsp;mA average). Trades sub-second NTP precision for <strong>7–10 days of unplugged runtime</strong>.</p>
-          </article>
-          <article class="principle-card">
-            <div class="principle-num">02 / RGB DIODES + MOSFET</div>
-            <h3>WS2812B 144&nbsp;LED/m + Night Cutoff</h3>
-            <p>Cutting a Botland 144&nbsp;LED/m strip to <strong>24 LEDs (167&nbsp;mm, 1/hr)</strong> halves idle quiescent drain, and a 3&nbsp;PLN <code>IRLZ44N</code> MOSFET disconnects the strip completely during night sleep (23:00–07:00) for <strong>0&nbsp;mA</strong> night drain.</p>
-          </article>
-          <article class="principle-card">
-            <div class="principle-num">03 / BATTERY + A1 CASE</div>
-            <h3>2× 18650 Pack + Single-Piece PETG</h3>
-            <p>Two 3400–3500&nbsp;mAh 18650 cells (~25&nbsp;Wh) inside a 250×56×52&nbsp;mm PETG shell that prints flat in one piece on a Bambu Lab A1 (256&nbsp;mm bed) with zero supports — easily hitting <strong>~8 days</strong> per charge.</p>
-          </article>
-        </div>
       </div>
     </section>
 
-    <!-- Section 2: Interactive Live Simulator & Modes -->
+    <!-- Shared Interactive Live Simulator (power model adapts to active tab!) -->
     <section id="simulator" class="section section-stone">
       <div class="container">
         <div class="clock-stage" aria-label="Interactive Linear Clock Simulator">
@@ -104,18 +94,26 @@
               </div>
             </div>
 
-            <div class="control-group">
+            <!-- Power control switches automatically between nRF52 (Lux ALS) and Raspberry (Eco PWM) -->
+            <div class="control-group" id="ctrl-nrf52">
+              <div class="control-label">
+                <span>Room Light (ALS) · Runtime</span>
+                <span class="control-value" id="nrf52-batt-readout">80 lux · ~2.8 mos</span>
+              </div>
+              <input id="lux-slider" class="range-input" type="range" min="0" max="400" value="80" aria-label="Ambient room light in lux" />
+              <div class="download-meta" id="als-hint">1× 18650 (3400&nbsp;mAh) · VEML7700 auto-dim + dark sleep (~4&nbsp;µA)</div>
+            </div>
+
+            <div class="control-group" id="ctrl-raspberry" hidden>
               <div class="control-label">
                 <span>Brightness · Runtime</span>
-                <span class="control-value" id="battery-readout">10% · ~8.2 days</span>
+                <span class="control-value" id="rpi-batt-readout">10% · ~8.3 days</span>
               </div>
               <input id="bright-slider" class="range-input" type="range" min="6" max="40" value="10" aria-label="LED brightness percentage" />
-              <div style="display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.15rem;">
-                <label class="download-meta" style="display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-                  <input id="eco-toggle" type="checkbox" checked />
-                  <span>1-Week Eco Mode (24 LEDs + 8h Night MOSFET off)</span>
-                </label>
-              </div>
+              <label class="download-meta" style="display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                <input id="eco-toggle" type="checkbox" checked />
+                <span>1-Week Eco Mode (24 LEDs + 8h Night MOSFET off)</span>
+              </label>
             </div>
 
             <div class="control-group">
@@ -138,394 +136,569 @@
         </div>
 
         <div class="caption-row">
-          <h2 id="mode-title">Color gradient mode</h2>
-          <p id="mode-desc">Time fills smoothly from midnight emerald to midday lime, afternoon amber, and evening coral. Drag the time slider above to see how the active 30-minute block fades in minute by minute — the exact same math runs in our MicroPython firmware.</p>
+          <h2 id="mode-title">1 · Color gradient mode</h2>
+          <p id="mode-desc">Time fills smoothly from midnight emerald to midday lime, afternoon amber, and evening coral. Switch between the <strong>nRF52</strong> and <strong>Raspberry</strong> tabs above to compare power consumption, 3D cases, schematics, Polish BOMs, and firmware.</p>
         </div>
       </div>
     </section>
 
-    <!-- Section 3: 3D-Printed PETG Case for Bambu Lab A1 -->
-    <section id="enclosure" class="section">
-      <div class="container">
-        <div class="media-frame">
-          <img id="case-preview-img" src="./assets/render-exploded.png" alt="Exploded assembly render of the 3D-printed PETG Linear Clock enclosure" width="1400" height="788" loading="lazy" />
-        </div>
-
-        <div class="switcher-bar" id="case-switcher" role="tablist" aria-label="3D enclosure views">
-          <button type="button" class="num-btn is-active" role="tab" aria-selected="true" data-img="./assets/render-exploded.png" data-caption="Exploded view: front diffuser faceplate, 48-cell matte black light baffle, single-piece 250 mm PETG body, Pico W + 18650 shield, and rear backplate.">1 · Exploded render</button>
-          <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./assets/render-rear.png" data-caption="Internal rear cavity: Pico W mounted on left standoffs, 18650 battery shield on right rails, WS2812B strip behind the baffle, and removable backplate.">2 · Rear &amp; internals</button>
-          <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./assets/cad-assembly.png" data-caption="OpenSCAD parametric CAD assembly (250 × 56 × 52 mm) — manifold geometry ready for Bambu Studio.">3 · CAD assembly</button>
-          <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./assets/cad-exploded.png" data-caption="OpenSCAD exploded CAD showing internal M3 bosses, Pico W standoffs, 48-tunnel baffle grid, and rear cutouts.">4 · CAD exploded</button>
-          <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./assets/cad-back.png" data-caption="OpenSCAD rear backplate detail: 3 tactile button holes (Mode, Brightness, Color), USB-C charging port, power slide switch, and vent slots.">5 · CAD backplate</button>
-        </div>
-
-        <div class="caption-row">
-          <h2>3D-printed PETG case for Bambu Lab A1</h2>
-          <div>
-            <p id="case-caption">Exploded view: front diffuser faceplate, 48-cell matte black light baffle, single-piece 250 mm PETG body, Pico W + 18650 shield, and rear backplate.</p>
-            <p>Sized to <strong>250 × 56 × 52&nbsp;mm</strong>, the entire shell prints flat on the Bambu Lab A1's 256×256&nbsp;mm Textured PEI plate in one piece without splitting or glue. A dedicated 0.8&nbsp;mm matte-black PETG light baffle isolates all 48 diodes so neighboring bars never bleed into each other.</p>
-          </div>
-        </div>
-
-        <div class="split-grid">
-          <div class="info-panel">
-            <h3>Bambu Lab A1 — PETG Print Profile</h3>
-            <div class="table-wrap" style="margin-block-start: 0;">
-              <table>
-                <tbody>
-                  <tr><th>Material</th><td>Bambu PETG HF / Matte PETG (Slate Grey, Black, Natural White)</td></tr>
-                  <tr><th>Build Plate</th><td>Textured PEI Plate @ <strong>70&nbsp;°C</strong> (no glue needed)</td></tr>
-                  <tr><th>Nozzle</th><td>0.4&nbsp;mm Stainless/Hardened @ <strong>255&nbsp;°C</strong></td></tr>
-                  <tr><th>Layer Height</th><td><strong>0.20&nbsp;mm</strong> Standard (0.16&nbsp;mm for diffuser plate)</td></tr>
-                  <tr><th>Walls / Infill</th><td>3 wall loops (1.2&nbsp;mm) · 15% Gyroid infill</td></tr>
-                  <tr><th>Supports</th><td><strong>None</strong> — print body face-down, backplate flat</td></tr>
-                  <tr><th>Est. Print Time</th><td>~4h 10m total across 4 parts (~145&nbsp;g PETG)</td></tr>
-                </tbody>
-              </table>
+    <!-- ====================================================================
+         TAB PANEL 1: nRF52 SOLUTION (DEFAULT)
+         ==================================================================== -->
+    <div id="panel-nrf52" class="solution-panel" role="tabpanel" aria-labelledby="tab-nrf52">
+      <!-- Concept -->
+      <section class="section">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>nRF52 · Engineered from first principles</h2>
+            <div>
+              <p>Inspired by <a href="https://daylightmachines.com/products/linear-clock/" target="_blank" rel="noopener">Daylight Machines</a>, this optimized custom design eliminates every power leak of addressable strips and 5V boost converters — achieving <strong>1–3 months</strong> of unplugged runtime on a single 18650 cell at a low BOM cost.</p>
+              <p>Every component sits on a <strong>single 240 × 38 mm 2-layer matte-black PCB</strong> (zero loose wires!), snapping cleanly into an ultra-slim 36&nbsp;mm PETG enclosure printed in one piece on a <strong>Bambu Lab A1</strong>.</p>
             </div>
           </div>
 
-          <div class="info-panel">
-            <h3>Download Printable CAD &amp; STL Files</h3>
-            <ul class="download-list">
-              <li class="download-item">
-                <div>
-                  <div class="mono"><strong>01_main_body.stl</strong></div>
-                  <div class="download-meta">250×56×52&nbsp;mm outer shell · Slate-Grey PETG</div>
-                </div>
-                <a class="btn-secondary" href="./cad/stl/01_main_body.stl" download>Download STL</a>
-              </li>
-              <li class="download-item">
-                <div>
-                  <div class="mono"><strong>02_led_baffle.stl</strong></div>
-                  <div class="download-meta">48-segment light isolation grid · Black PETG</div>
-                </div>
-                <a class="btn-secondary" href="./cad/stl/02_led_baffle.stl" download>Download STL</a>
-              </li>
-              <li class="download-item">
-                <div>
-                  <div class="mono"><strong>03_diffuser_faceplate.stl</strong></div>
-                  <div class="download-meta">0.8&nbsp;mm diffuser + scale · White/Black PETG (AMS Lite)</div>
-                </div>
-                <a class="btn-secondary" href="./cad/stl/03_diffuser_faceplate.stl" download>Download STL</a>
-              </li>
-              <li class="download-item">
-                <div>
-                  <div class="mono"><strong>04_backplate.stl</strong></div>
-                  <div class="download-meta">USB-C, switch &amp; 3-button rear panel · Slate-Grey PETG</div>
-                </div>
-                <a class="btn-secondary" href="./cad/stl/04_backplate.stl" download>Download STL</a>
-              </li>
-              <li class="download-item">
-                <div>
-                  <div class="mono"><strong>linear_clock_case.scad</strong></div>
-                  <div class="download-meta">Parametric OpenSCAD source (tweak pitch / tolerance)</div>
-                </div>
-                <a class="btn-primary" href="./cad/linear_clock_case.scad" download>Download SCAD</a>
-              </li>
-            </ul>
+          <div class="principles-grid">
+            <article class="principle-card">
+              <div class="principle-num">01 / PASSIVE RGB MATRIX</div>
+              <h3>48× 1615 SMD RGB + IS31FL3733</h3>
+              <p>Passive SMD RGB LEDs driven by an <code>IS31FL3733</code> constant-current matrix IC draw <strong>0.000&nbsp;mA</strong> when unlit and only <strong>0.15–1.0&nbsp;mA</strong> per active bar.</p>
+            </article>
+            <article class="principle-card">
+              <div class="principle-num">02 / MICROAMP BRAIN + BLE</div>
+              <h3>nRF52832 + 32.768&nbsp;kHz Crystal</h3>
+              <p>Sleeps at <strong>~2&nbsp;µA</strong> (1,000× lower than Pico W) while keeping accurate RTC time. BLE stays off until you hold Button 1 to customize colors or schedules from your phone.</p>
+            </article>
+            <article class="principle-card">
+              <div class="principle-num">03 / DIRECT 3.7V + AUTO-DIM</div>
+              <h3>Zero 5V Boost + VEML7700 ALS</h3>
+              <p>Runs directly off <strong>1× 18650 (3.7V)</strong> with no 5V boost losses. A <code>VEML7700</code> ambient light sensor auto-dims LEDs in dim rooms and enters <strong>~4&nbsp;µA</strong> shutdown in pitch darkness.</p>
+            </article>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Section 4: Hardware Wiring Plan -->
-    <section id="wiring" class="section section-stone">
-      <div class="container">
-        <div class="schematic-box" aria-label="Hardware wiring schematic diagram">
-          <svg viewBox="0 0 1120 450" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wiring plan connecting 18650 Battery Shield, Raspberry Pi Pico W, 48-LED WS2812B strip, 330 ohm resistor, 470 uF capacitor, and 3 tactile buttons">
-            <!-- Background Grid -->
-            <rect width="1120" height="450" fill="#ffffff" />
-
-            <!-- Top Module: 48x WS2812B LED Strip -->
-            <rect x="60" y="34" width="1000" height="68" fill="#f7f7f6" stroke="#222222" stroke-width="2" />
-            <text x="80" y="60" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">48× WS2812B RGB LED Strip (200 LEDs/m · 5 mm pitch · 240 mm active length)</text>
-            <!-- Mini LED squares -->
-            <g transform="translate(80, 72)">
-              <rect x="0" y="0" width="18" height="16" fill="#00d26a" /><rect x="24" y="0" width="18" height="16" fill="#1fd660" />
-              <rect x="48" y="0" width="18" height="16" fill="#4edb55" /><rect x="72" y="0" width="18" height="16" fill="#82df48" />
-              <rect x="96" y="0" width="18" height="16" fill="#b7de3b" /><rect x="120" y="0" width="18" height="16" fill="#e5ce31" />
-              <rect x="144" y="0" width="18" height="16" fill="#f5b22b" /><rect x="168" y="0" width="18" height="16" fill="#f5862e" />
-              <rect x="192" y="0" width="18" height="16" fill="#2b2b2e" /><rect x="216" y="0" width="18" height="16" fill="#2b2b2e" />
-              <text x="252" y="13" font-family="JetBrains Mono, monospace" font-size="12" fill="#555555">... 48 addressable RGB segments total (only 3 solder pads on input end)</text>
-            </g>
-            <!-- Strip input pads -->
-            <circle cx="110" cy="102" r="5" fill="#d92d20" />
-            <text x="120" y="118" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#d92d20">+5V</text>
-            <circle cx="240" cy="102" r="5" fill="#1570ef" />
-            <text x="250" y="118" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#1570ef">DIN</text>
-            <circle cx="370" cy="102" r="5" fill="#111111" />
-            <text x="380" y="118" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#111111">GND</text>
-
-            <!-- Left Module: 18650 Battery Shield -->
-            <rect x="60" y="210" width="265" height="190" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
-            <text x="80" y="238" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">18650 Battery Shield (V3 / V8)</text>
-            <text x="80" y="258" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#444444">Built-in USB-C charger + 5V 2A boost</text>
-            <!-- Battery cell graphic -->
-            <rect x="85" y="276" width="190" height="46" rx="4" fill="#2c6fbb" stroke="#1b497d" stroke-width="1.5" />
-            <rect x="275" y="289" width="10" height="20" fill="#999999" />
-            <text x="122" y="304" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#ffffff">18650 Li-Ion 3.7V</text>
-            <!-- USB-C & Switch badges -->
-            <rect x="80" y="340" width="84" height="26" fill="#222222" />
-            <text x="93" y="357" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff">USB-C IN</text>
-            <rect x="176" y="340" width="100" height="26" fill="#ffffff" stroke="#222222" />
-            <text x="188" y="357" font-family="JetBrains Mono, monospace" font-size="11" fill="#000000">ON/OFF SW</text>
-            <!-- Output terminals -->
-            <circle cx="325" cy="246" r="5" fill="#d92d20" />
-            <text x="278" y="250" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#d92d20">5V OUT</text>
-            <circle cx="325" cy="378" r="5" fill="#111111" />
-            <text x="292" y="382" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#111111">GND</text>
-
-            <!-- Center Module: Raspberry Pi Pico W -->
-            <rect x="445" y="195" width="310" height="210" fill="#e9f5ee" stroke="#1b6b3a" stroke-width="2" />
-            <text x="465" y="224" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#114b27">Raspberry Pi Pico W / Pico 2 W</text>
-            <text x="465" y="244" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#235c39">MicroPython · Wi-Fi NTP · PIO LED driver</text>
-            <!-- Pico Pins Left -->
-            <circle cx="445" cy="272" r="5" fill="#d92d20" />
-            <text x="458" y="276" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#000000">Pin 40 · VBUS (5V)</text>
-            <circle cx="445" cy="306" r="5" fill="#1570ef" />
-            <text x="458" y="310" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#1570ef">Pin 1  · GP0 (LED DATA)</text>
-            <circle cx="445" cy="340" r="5" fill="#0e9384" />
-            <text x="458" y="344" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#0e9384">Pin 2  · GP1 (MOSFET GATE)</text>
-            <circle cx="445" cy="378" r="5" fill="#111111" />
-            <text x="458" y="382" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#000000">Pin 38 · GND</text>
-            <!-- Pico Pins Right -->
-            <circle cx="755" cy="272" r="5" fill="#7a5af8" />
-            <text x="668" y="276" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#5925dc">GP14 (P19)</text>
-            <circle cx="755" cy="312" r="5" fill="#7a5af8" />
-            <text x="668" y="316" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#5925dc">GP15 (P20)</text>
-            <circle cx="755" cy="352" r="5" fill="#7a5af8" />
-            <text x="668" y="356" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#5925dc">GP16 (P21)</text>
-            <circle cx="755" cy="384" r="5" fill="#111111" />
-            <text x="714" y="388" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#000000">GND</text>
-
-            <!-- Right Module: 3 Rear Tactile Buttons -->
-            <rect x="855" y="220" width="205" height="185" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
-            <text x="873" y="248" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#000000">3× Rear Tactile Buttons</text>
-            <text x="873" y="264" font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="#555555">Internal PULL_UP (no resistors)</text>
-            <rect x="873" y="278" width="168" height="26" fill="#ffffff" stroke="#555555" />
-            <text x="883" y="295" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 1 · Mode / Wake</text>
-            <rect x="873" y="316" width="168" height="26" fill="#ffffff" stroke="#555555" />
-            <text x="883" y="333" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 2 · Brightness</text>
-            <rect x="873" y="354" width="168" height="26" fill="#ffffff" stroke="#555555" />
-            <text x="883" y="371" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 3 · Color / +15m</text>
-
-            <!-- WIRES -->
-            <!-- +5V Red Rail: Battery -> LED Strip & Pico VBUS -->
-            <path d="M 325 246 L 395 246 L 395 148 L 110 148 L 110 102" stroke="#d92d20" stroke-width="3" fill="none" />
-            <path d="M 395 246 L 418 246 L 418 272 L 445 272" stroke="#d92d20" stroke-width="3" fill="none" />
-
-            <!-- 470uF Capacitor across 5V and GND -->
-            <line x1="175" y1="148" x2="175" y2="168" stroke="#d92d20" stroke-width="2" />
-            <rect x="155" y="168" width="40" height="22" fill="#222222" />
-            <text x="160" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffffff">470µF</text>
-            <line x1="175" y1="190" x2="175" y2="206" stroke="#111111" stroke-width="2" />
-            <path d="M 175 206 L 370 206 L 370 102" stroke="#111111" stroke-width="2.5" fill="none" />
-
-            <!-- GND Black Rail + IRLZ44N MOSFET Low-Side Cutoff for Night Sleep -->
-            <path d="M 325 378 L 445 378" stroke="#111111" stroke-width="3" fill="none" />
-            <path d="M 370 378 L 370 356" stroke="#111111" stroke-width="3" fill="none" />
-            <rect x="336" y="324" width="68" height="32" fill="#e6f7f5" stroke="#0e9384" stroke-width="1.8" />
-            <text x="342" y="338" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#0b6e63">IRLZ44N</text>
-            <text x="342" y="350" font-family="JetBrains Mono, monospace" font-size="9" fill="#0b6e63">Night Cut</text>
-            <path d="M 370 324 L 370 206" stroke="#111111" stroke-width="3" fill="none" />
-            <path d="M 445 340 L 404 340" stroke="#0e9384" stroke-width="2.5" fill="none" />
-
-            <!-- DATA Blue Wire: Pico GP0 -> 330 Ohm Resistor -> Strip DIN -->
-            <path d="M 445 306 L 410 306 L 410 176 L 308 176" stroke="#1570ef" stroke-width="3" fill="none" />
-            <rect x="256" y="165" width="52" height="22" fill="#fff4ed" stroke="#b93815" stroke-width="1.8" />
-            <text x="263" y="180" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#b93815">330 Ω</text>
-            <path d="M 256 176 L 240 176 L 240 102" stroke="#1570ef" stroke-width="3" fill="none" />
-
-            <!-- Button Wires: GP14/15/16 -> Buttons + Common GND -->
-            <path d="M 755 272 L 820 272 L 820 291 L 873 291" stroke="#7a5af8" stroke-width="2.2" fill="none" />
-            <path d="M 755 312 L 808 312 L 808 329 L 873 329" stroke="#7a5af8" stroke-width="2.2" fill="none" />
-            <path d="M 755 352 L 796 352 L 796 367 L 873 367" stroke="#7a5af8" stroke-width="2.2" fill="none" />
-            <path d="M 755 384 L 855 384" stroke="#111111" stroke-width="2.2" stroke-dasharray="5 3" fill="none" />
-          </svg>
-        </div>
-
-        <div class="caption-row">
-          <h2>Battery-first wiring plan (~7–10 days)</h2>
-          <div>
-            <p>Each WS2812B diode draws ~0.85&nbsp;mA even when black. To stretch a <strong>2× 18650 (6800&nbsp;mAh)</strong> pack to a full week, we combine three simple tricks: underclock the Pico 2 W to 48&nbsp;MHz with Wi-Fi OFF + <code>lightsleep()</code> (~1.8&nbsp;mA), use <strong>24 LEDs</strong> from a 144&nbsp;LED/m strip (halving idle LED drain to ~20&nbsp;mA), and put a single <code>IRLZ44N</code> logic-level MOSFET on <code>GP1</code> to completely disconnect LED ground during night sleep (23:00–07:00 = <strong>0&nbsp;mA</strong>).</p>
-            <p><strong>24h Power Budget:</strong> 16h daytime (~29&nbsp;mA at 10% Eco brightness) + 8h night sleep (~1.8&nbsp;mA) = <strong>~20&nbsp;mA daily average</strong> → <strong>~200+ hours (~8.3 days)</strong> per charge! (Pressing any rear button wakes the display immediately at night.)</p>
+      <!-- nRF52 3D PETG Case -->
+      <section id="nrf52-case" class="section section-stone">
+        <div class="container">
+          <div class="media-frame">
+            <img class="case-preview-img" src="./solutions/nrf52/assets/render-exploded.png" alt="Exploded assembly render of the ultra-slim 36 mm nRF52 PETG enclosure" width="1400" height="788" loading="lazy" />
           </div>
-        </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Connection</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="tag">+5V Power</span></td>
-                <td class="mono">Battery Shield / UPS 5V OUT</td>
-                <td class="mono">LED Strip +5V &amp; Pico VBUS (Pin 40)</td>
-                <td>Add 470&nbsp;µF (≥10V) electrolytic capacitor across +5V &amp; GND near the strip.</td>
-              </tr>
-              <tr>
-                <td><span class="tag">Ground + Night Cut</span></td>
-                <td class="mono">Battery GND → IRLZ44N (S→D)</td>
-                <td class="mono">LED Strip GND (Pico GND direct)</td>
-                <td>Connect Pico <code>GP1</code> to MOSFET Gate (with 10&nbsp;kΩ pull-down to GND). Cuts LED drain to 0&nbsp;mA at night!</td>
-              </tr>
-              <tr>
-                <td><span class="tag">LED Data</span></td>
-                <td class="mono">Pico GP0 (Pin 1)</td>
-                <td class="mono">LED Strip DIN (input arrow →)</td>
-                <td>Inline 330&nbsp;Ω resistor protects the first LED pixel.</td>
-              </tr>
-              <tr>
-                <td><span class="tag">Rear Buttons</span></td>
-                <td class="mono">Pico GP14, GP15, GP16</td>
-                <td class="mono">3× Tactile Buttons → GND</td>
-                <td>Firmware enables internal <code>PULL_UP</code> + IRQ wake from <code>lightsleep()</code>.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 5: Bill of Materials (Elements to Buy — Polish Shops / Botland) -->
-    <section id="bom" class="section">
-      <div class="container">
-        <div class="caption-row" style="margin-block-start: 0;">
-          <h2>Necessary elements to buy (Poland / Botland)</h2>
-          <p>All compatible parts below are directly linked to <strong>Botland (botland.com.pl)</strong> so you can order everything in one Polish shipment. Prices are approximate in PLN. No custom PCB is needed — only simple point-to-point wiring.</p>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th>Compatible Spec (1-Week Battery Build)</th>
-                <th>Qty</th>
-                <th>Est. PLN</th>
-                <th>Polish Shop Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Raspberry Pi Pico 2 W</strong><br /><span class="download-meta">(or Pico W)</span></td>
-                <td>RP2350 (even lower sleep current than RP2040), Wi-Fi/BT disabled in Eco mode for ~1.8&nbsp;mA <code>lightsleep()</code>.</td>
-                <td>1</td>
-                <td class="mono">~35&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/moduly-i-zestawy-do-raspberry-pi-pico-2/25727-raspberry-pi-pico-2-w-rp2350-arm-cortex-m33-cyw43439-wifibluetooth-5056561803975.html" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-              <tr>
-                <td><strong>WS2812B 144&nbsp;LED/m Strip (5V)</strong></td>
-                <td>Cut to <strong>24 LEDs (167&nbsp;mm)</strong> for ~8–10 day battery life (1 LED/hr), or 48 LEDs if you prefer 30-min blocks.</td>
-                <td>1&nbsp;m</td>
-                <td class="mono">~55&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/paski-led-adresowane/5814-pasek-led-rgb-ws2812b-cyfrowy-adresowany-ip65-144-ledm-43wm-5v-1m-5904422374655.html" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-              <tr>
-                <td><strong>2× 18650 5V UPS Module</strong><br /><span class="download-meta">or 1-cell 18650 Shield</span></td>
-                <td><strong>Waveshare 18306 (2× 18650, 5V)</strong> for full 1-week runtime, or budget <strong>18650 Battery Shield</strong> (~3–4 days).</td>
-                <td>1</td>
-                <td class="mono">~35–95&nbsp;zł</td>
-                <td>
-                  <a class="btn-secondary" href="https://botland.com.pl/raspberry-pi-hat-nakladki-zasilajace/19046-zasilacz-awaryjny-ups-nakladka-zasilajaca-do-raspberry-pi-5-v-waveshare-18306-5904422367039.html" target="_blank" rel="noopener">2× UPS →</a>
-                  <a class="btn-secondary" style="margin-block-start: 0.35rem;" href="https://botland.com.pl/arduino-shield-rozszerzenia/29327-battery-18650-shield-nakladka-power-bank-do-arduino-5904257821034.html" target="_blank" rel="noopener">1× Shield →</a>
-                </td>
-              </tr>
-              <tr>
-                <td><strong>18650 Li-Ion 3400–3500&nbsp;mAh</strong></td>
-                <td><strong>Samsung INR18650-35E</strong> (3400&nbsp;mAh) or protected <strong>XTAR 3500&nbsp;mAh</strong>. Use 2 cells (~25&nbsp;Wh) for 7–10 days.</td>
-                <td>2</td>
-                <td class="mono">~44&nbsp;zł</td>
-                <td>
-                  <a class="btn-secondary" href="https://botland.com.pl/akumulatory-li-ion/15216-ogniwo-18650-li-ion-samsung-inr18650-35e-3400mah-5904422343071.html" target="_blank" rel="noopener">Samsung →</a>
-                  <a class="btn-secondary" style="margin-block-start: 0.35rem;" href="https://botland.com.pl/akumulatory-li-ion/10934-ogniwo-18650-li-ion-xtar-3500mah-6952918340690.html" target="_blank" rel="noopener">XTAR →</a>
-                </td>
-              </tr>
-              <tr>
-                <td><strong>IRLZ44N Logic-Level MOSFET</strong></td>
-                <td>3.3V-compatible N-channel MOSFET (+ 10&nbsp;kΩ pull-down). Cuts LED strip power at night to eliminate idle drain.</td>
-                <td>1</td>
-                <td class="mono">~4&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/szukaj?s=IRLZ44N" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-              <tr>
-                <td><strong>Tact Switch 6×6&nbsp;mm</strong></td>
-                <td>Momentary push buttons for Mode/Wake, Brightness, and Color/+15m on the rear backplate.</td>
-                <td>3</td>
-                <td class="mono">~3&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/79-tact-switch" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-              <tr>
-                <td><strong>Passives (330&nbsp;Ω, 10&nbsp;kΩ, 470&nbsp;µF)</strong></td>
-                <td>1× 330&nbsp;Ω LED data resistor, 1× 10&nbsp;kΩ MOSFET pull-down, 1× 470&nbsp;µF 16V cap, 22&nbsp;AWG wire &amp; 4× M3 screws.</td>
-                <td>1 set</td>
-                <td class="mono">~10&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/szukaj?s=rezystor+330" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-              <tr>
-                <td><strong>PETG Filament (1.75&nbsp;mm)</strong></td>
-                <td>Matte Slate-Grey, Matte Black (baffle), and Natural/White (0.8&nbsp;mm diffuser) for Bambu Lab A1 (~145&nbsp;g used).</td>
-                <td>~145&nbsp;g</td>
-                <td class="mono">~15&nbsp;zł</td>
-                <td><a class="btn-secondary" href="https://botland.com.pl/849-filamenty-petg" target="_blank" rel="noopener">Botland →</a></td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3">Estimated Total Build Cost in Poland (excluding 3D printer)</td>
-                <td class="mono" colspan="2">~200 – 260&nbsp;zł (with 1&nbsp;m LED strip &amp; 2× 18650)</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 6: Programmable MicroPython Firmware -->
-    <section id="firmware" class="section section-stone">
-      <div class="container">
-        <div class="caption-row" style="margin-block-start: 0;">
-          <h2>Program your own colors &amp; modes</h2>
-          <div>
-            <p>The entire clock runs on a single readable <strong>MicroPython</strong> file (<code class="mono">firmware/main.py</code>). Plug the Pico W into your laptop, open <a href="https://thonny.org/" target="_blank" rel="noopener">Thonny</a>, edit any RGB tuple or schedule block, and hit Save — the LED bar updates immediately.</p>
-            <p>Even better: the <strong>Live Palette Config</strong> tab below automatically mirrors the color and mode you selected in the interactive simulator above.</p>
+          <div class="switcher-bar case-switcher" role="tablist" aria-label="nRF52 3D enclosure views">
+            <button type="button" class="num-btn is-active" role="tab" aria-selected="true" data-img="./solutions/nrf52/assets/render-exploded.png" data-caption="Exploded view: smoked faceplate with ALS window, 48-cell matte-black light baffle, 36 mm ultra-slim PETG body, single 240×38 mm black PCB (48× 1615 RGB + nRF52832 + 18650 clips), and rear backplate.">1 · Exploded render</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/nrf52/assets/render-rear.png" data-caption="Rear cavity (zero loose wires!): single matte-black PCB with shielded nRF52832 module, IS31FL3733 driver IC, 3 SMD buttons, 1× 18650 cell in SMD clips, and USB-C charging port.">2 · Single-PCB rear</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/nrf52/assets/cad-assembly.png" data-caption="OpenSCAD parametric CAD assembly (250 × 52 × 36 mm) — 16 mm slimmer than the Raspberry module build.">3 · CAD assembly</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/nrf52/assets/cad-exploded.png" data-caption="OpenSCAD exploded CAD showing the 240×38 mm PCB rails, 48-tunnel light baffle, and 2.4 mm VEML7700 light sensor aperture.">4 · CAD exploded</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/nrf52/assets/cad-back.png" data-caption="OpenSCAD rear backplate detail: 3 SMD tactile button holes, USB-C cutout, and BLE RF window slots.">5 · CAD backplate</button>
           </div>
-        </div>
 
-        <div class="code-shell">
-          <div class="code-toolbar">
-            <div class="code-tabs" role="tablist" aria-label="Firmware views">
-              <button type="button" class="code-tab is-active" role="tab" aria-selected="true" data-tab="palette">palette_config.py (live)</button>
-              <button type="button" class="code-tab" role="tab" aria-selected="false" data-tab="full">firmware/main.py</button>
-              <button type="button" class="code-tab" role="tab" aria-selected="false" data-tab="setup">5-minute flash guide</button>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-              <button type="button" id="copy-code-btn" class="btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;">Copy</button>
-              <a class="btn-primary" href="./firmware/main.py" download style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">Download main.py</a>
+          <div class="caption-row">
+            <h2>Ultra-slim 36&nbsp;mm PETG case (nRF52)</h2>
+            <div>
+              <p class="case-caption">Exploded view: smoked faceplate with ALS window, 48-cell matte-black light baffle, 36 mm ultra-slim PETG body, single 240×38 mm black PCB (48× 1615 RGB + nRF52832 + 18650 clips), and rear backplate.</p>
+              <p>Sized to <strong>250 × 52 × 36&nbsp;mm</strong>, printing flat in one piece on the Bambu Lab A1's 256×256&nbsp;mm Textured PEI plate with zero supports (~105&nbsp;g PETG, ~3h 15m).</p>
             </div>
           </div>
-          <pre class="code-pre"><code id="code-viewer"></code></pre>
+
+          <div class="split-grid">
+            <div class="info-panel">
+              <h3>Bambu Lab A1 — PETG Print Profile</h3>
+              <div class="table-wrap" style="margin-block-start: 0;">
+                <table>
+                  <tbody>
+                    <tr><th>Dimensions</th><td><strong>250 × 52 × 36&nbsp;mm</strong> (single-piece on A1)</td></tr>
+                    <tr><th>Plate / Nozzle</th><td>Textured PEI @ <strong>70&nbsp;°C</strong> · 0.4&nbsp;mm @ <strong>255&nbsp;°C</strong></td></tr>
+                    <tr><th>Layers / Infill</th><td><strong>0.20&nbsp;mm</strong> · 3 walls · 15% Gyroid · <strong>Zero supports</strong></td></tr>
+                    <tr><th>Print Time</th><td>~3h 15m total (~105&nbsp;g PETG)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <h3>Download nRF52 CAD &amp; STL Files</h3>
+              <ul class="download-list">
+                <li class="download-item">
+                  <div><div class="mono"><strong>01_main_body.stl</strong></div><div class="download-meta">250×52×36&nbsp;mm ultra-slim shell · Slate-Grey PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/nrf52/cad/stl/01_main_body.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>02_led_baffle.stl</strong></div><div class="download-meta">48-cell baffle for 1615 SMD RGB · Black PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/nrf52/cad/stl/02_led_baffle.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>03_diffuser_faceplate.stl</strong></div><div class="download-meta">0.8&nbsp;mm diffuser + ALS window · White/Black PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/nrf52/cad/stl/03_diffuser_faceplate.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>04_backplate.stl</strong></div><div class="download-meta">USB-C, 3 SMD buttons &amp; BLE RF slots</div></div>
+                  <a class="btn-secondary" href="./solutions/nrf52/cad/stl/04_backplate.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>linear_clock_case.scad</strong></div><div class="download-meta">Parametric OpenSCAD source (nRF52 PCB)</div></div>
+                  <a class="btn-primary" href="./solutions/nrf52/cad/linear_clock_case.scad" download>Download SCAD</a>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- nRF52 PCB Architecture -->
+      <section id="nrf52-wiring" class="section">
+        <div class="container">
+          <div class="schematic-box" aria-label="nRF52 single-PCB block schematic">
+            <svg viewBox="0 0 1120 460" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Single 240x38 mm PCB architecture for nRF52832 and 48 passive RGB LEDs">
+              <rect width="1120" height="460" fill="#ffffff" />
+              <rect x="60" y="28" width="1000" height="72" fill="#f7f7f6" stroke="#222222" stroke-width="2" />
+              <text x="80" y="54" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">48× Passive 1615 SMD RGB LEDs — Front Side of 240×38 mm PCB (0.000 mA Idle Drain!)</text>
+              <g transform="translate(80, 66)">
+                <rect x="0" y="0" width="18" height="16" fill="#00d26a" /><rect x="24" y="0" width="18" height="16" fill="#1fd660" />
+                <rect x="48" y="0" width="18" height="16" fill="#4edb55" /><rect x="72" y="0" width="18" height="16" fill="#82df48" />
+                <rect x="96" y="0" width="18" height="16" fill="#b7de3b" /><rect x="120" y="0" width="18" height="16" fill="#e5ce31" />
+                <rect x="144" y="0" width="18" height="16" fill="#f5b22b" /><rect x="168" y="0" width="18" height="16" fill="#f5862e" />
+                <rect x="192" y="0" width="18" height="16" fill="#2b2b2e" /><rect x="216" y="0" width="18" height="16" fill="#2b2b2e" />
+                <text x="252" y="13" font-family="JetBrains Mono, monospace" font-size="12" fill="#555555">12×16 matrix grid (144 RGB channels) · Direct 3.7V VBAT drive</text>
+              </g>
+              <rect x="60" y="185" width="275" height="235" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
+              <text x="78" y="212" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">Direct 3.7V Power (No Boost!)</text>
+              <text x="78" y="232" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#444444">Zero 5V conversion loss · 1.6 µA LDO</text>
+              <rect x="78" y="248" width="238" height="44" rx="3" fill="#2c6fbb" stroke="#1b497d" stroke-width="1.5" />
+              <text x="108" y="275" font-family="JetBrains Mono, monospace" font-size="12.5" font-weight="600" fill="#ffffff">1× 18650 (3400 mAh) Clips</text>
+              <rect x="78" y="306" width="112" height="42" fill="#222222" />
+              <text x="88" y="324" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff">USB-C +</text>
+              <text x="88" y="339" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#cccccc">MCP73831 500mA</text>
+              <rect x="202" y="306" width="114" height="42" fill="#ffffff" stroke="#222222" />
+              <text x="212" y="324" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#000000">MCP1700-3.3</text>
+              <text x="212" y="339" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#555555">Iq = 1.6 µA</text>
+              <text x="78" y="376" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="600" fill="#d92d20">VBAT (3.0–4.2V) → LED Matrix</text>
+              <text x="78" y="398" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="600" fill="#0e9384">3.3V LDO → nRF52 + VEML7700</text>
+              <rect x="410" y="155" width="320" height="108" fill="#eef4ff" stroke="#1570ef" stroke-width="2" />
+              <text x="428" y="182" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#1849a9">IS31FL3733 Matrix Driver (QFN-48)</text>
+              <text x="428" y="202" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#1d4ed8">144 constant-current PWM channels · GCC auto-dim</text>
+              <text x="428" y="224" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">I²C Addr: 0x50 · SDB LOW = 1 µA shutdown</text>
+              <text x="428" y="246" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#1849a9">CS1..16 + SW1..12 → 48× Passive RGB LEDs</text>
+              <rect x="410" y="300" width="320" height="120" fill="#e9f5ee" stroke="#1b6b3a" stroke-width="2" />
+              <text x="428" y="326" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#114b27">nRF52832 BLE Module (MDBT42Q)</text>
+              <text x="428" y="346" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#235c39">32.768 kHz RTC (~2 µA sleep) · On-demand Web BLE</text>
+              <text x="428" y="370" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">P0.25/P0.26 (I²C) · P0.11 (IS31 SDB)</text>
+              <text x="428" y="392" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#5925dc">P0.14 / P0.15 / P0.16 (3× Rear Buttons)</text>
+              <rect x="815" y="155" width="245" height="108" fill="#fff7ed" stroke="#c2410c" stroke-width="2" />
+              <text x="833" y="182" font-family="Inter, sans-serif" font-size="14.5" font-weight="700" fill="#9a3412">VEML7700 Light Sensor</text>
+              <text x="833" y="202" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#9a3412">Behind 2.4 mm bezel window</text>
+              <text x="833" y="226" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">I²C Addr: 0x10 (0.5 µA)</text>
+              <text x="833" y="246" font-family="JetBrains Mono, monospace" font-size="11" fill="#7c2d12">Auto-dim + Dark Sleep</text>
+              <rect x="815" y="300" width="245" height="120" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
+              <text x="833" y="326" font-family="Inter, sans-serif" font-size="14.5" font-weight="700" fill="#000000">3× Rear SMD Buttons</text>
+              <text x="833" y="346" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 1: Mode / Hold 2s BLE</text>
+              <text x="833" y="370" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 2: Brightness Trim</text>
+              <text x="833" y="394" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 3: Color / +15m Set</text>
+              <path d="M 570 155 L 570 100" stroke="#1570ef" stroke-width="4" />
+              <text x="580" y="132" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="600" fill="#1570ef">28 Matrix Traces (on PCB)</text>
+              <path d="M 335 215 L 410 215" stroke="#d92d20" stroke-width="3" />
+              <path d="M 335 360 L 410 360" stroke="#0e9384" stroke-width="3" />
+              <path d="M 530 300 L 530 263" stroke="#111111" stroke-width="2.5" />
+              <path d="M 610 300 L 610 263" stroke="#0e9384" stroke-width="2.5" />
+              <path d="M 730 210 L 815 210" stroke="#c2410c" stroke-width="2.5" />
+              <path d="M 730 360 L 815 360" stroke="#7a5af8" stroke-width="2.5" />
+            </svg>
+          </div>
+
+          <div class="caption-row">
+            <h2>Single-PCB power budget (~1–3 months)</h2>
+            <div>
+              <p>With a single <strong>3400&nbsp;mAh 18650</strong> cell used directly at 3.7V (no 5V boost converter) and passive LEDs (`0.000 mA` unlit): <strong>16h indoor daytime @ 80 lux (~2.6 mA)</strong> + <strong>8h dark sleep (~4 µA)</strong> = <strong>~1.7 mA daily average</strong> → <strong>~2.8 months</strong> per charge (or <strong>4+ months</strong> in Calm mode).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- nRF52 Polish BOM -->
+      <section id="nrf52-bom" class="section section-stone">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>Parts to buy — Polish shops (TME &amp; Botland)</h2>
+            <p>Every component is available in Poland: <strong>TME (Łódź, next-day shipping)</strong> for bare SMD ICs, passive RGB LEDs, and battery holders, plus <strong>Botland</strong> for sensors, 18650 cells, and PETG filament.</p>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Component</th><th>Exact Part Number</th><th>Qty</th><th>Est. PLN</th><th>Polish Shop Link</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>nRF52832 BLE Module</strong><br /><span class="download-meta">or XIAO nRF52840</span></td>
+                  <td>Raytac <code>MDBT42Q-512KV2</code> (~2&nbsp;µA sleep) or <code>XIAO nRF52840</code> for prototyping.</td>
+                  <td>1</td>
+                  <td class="mono">~28–45&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://www.tme.eu/pl/details/mdbt42q-512kv2/moduly-iot-wifi-bluetooth/raytac/" target="_blank" rel="noopener">TME →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/k/nrf52840" target="_blank" rel="noopener">Botland →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>IS31FL3733 / 3731 Driver</strong></td>
+                  <td>Constant-current I²C matrix driver (<code>MIKROE-6669</code> at TME or <code>IS31FL3731</code> at Botland).</td>
+                  <td>1</td>
+                  <td class="mono">~15–45&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://www.tme.eu/pl/katalog/?query=IS31FL3733" target="_blank" rel="noopener">TME →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/szukaj?s=IS31FL3731" target="_blank" rel="noopener">Botland →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>Passive SMD RGB LEDs</strong></td>
+                  <td>Inolux <code>IN-S66TATRGB</code> (0606/1615, <strong>0.000&nbsp;mA</strong> idle drain).</td>
+                  <td>48</td>
+                  <td class="mono">~18&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://www.tme.eu/pl/katalog/?query=IN-S66TATRGB" target="_blank" rel="noopener">TME →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>VEML7700 Light Sensor</strong></td>
+                  <td>16-bit I²C lux sensor (<code>Adafruit 4162</code> / <code>SEN0228</code>) for auto-dim &amp; dark sleep.</td>
+                  <td>1</td>
+                  <td class="mono">~26&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/czujniki-swiatla-i-koloru/23550-czujnik-natezenia-swiatla-veml7700-i2c-stemma-qt-qwiic-adafruit-4162.html" target="_blank" rel="noopener">Botland →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://www.tme.eu/pl/katalog/?query=VEML7700" target="_blank" rel="noopener">TME →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>MCP73831 + MCP1700 LDO</strong></td>
+                  <td><code>MCP73831-2DCI/MC</code> Li-Ion charger + <code>MCP1700-3302E/TO</code> (<strong>1.6&nbsp;µA</strong> LDO).</td>
+                  <td>1 set</td>
+                  <td class="mono">~8&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://www.tme.eu/pl/details/mcp73831-2dci_mc/kontrolery-baterii-i-akumulatorow-uklady/microchip-technology/" target="_blank" rel="noopener">TME 73831 →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://www.tme.eu/pl/details/mcp1700-3302e_to/stabilizatory-napiecia-nieregulowane-ldo/microchip-technology/" target="_blank" rel="noopener">TME 1700 →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>18650 SMD Holder + Buttons</strong></td>
+                  <td>Keystone <code>KEYS1042</code> SMD 18650 holder + 3× 6×6&nbsp;mm Tact Switch.</td>
+                  <td>1 set</td>
+                  <td class="mono">~16&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://www.tme.eu/pl/katalog/?query=KEYS1042" target="_blank" rel="noopener">TME →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/79-tact-switch" target="_blank" rel="noopener">Botland →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>1× 18650 Li-Ion Cell</strong></td>
+                  <td>Samsung <code>INR18650-35E</code> (3400&nbsp;mAh) or protected XTAR 3500&nbsp;mAh.</td>
+                  <td>1</td>
+                  <td class="mono">~22&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/akumulatory-li-ion/15216-ogniwo-18650-li-ion-samsung-inr18650-35e-3400mah-5904422343071.html" target="_blank" rel="noopener">Samsung →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/akumulatory-li-ion/10934-ogniwo-18650-li-ion-xtar-3500mah-6952918340690.html" target="_blank" rel="noopener">XTAR →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>PCB + PETG Filament</strong></td>
+                  <td>240×38&nbsp;mm 2-layer PCB (qty 5 batch ~11&nbsp;zł/pc) + ~105&nbsp;g PETG filament.</td>
+                  <td>1 set</td>
+                  <td class="mono">~22&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/849-filamenty-petg" target="_blank" rel="noopener">Botland PETG →</a></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3">Estimated Total (Single Prototype from Polish Shops)</td>
+                  <td class="mono" colspan="2">~155 – 195&nbsp;zł (~72&nbsp;zł/clock in qty 5 PCBA batch)</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- nRF52 Firmware -->
+      <section id="nrf52-firmware" class="section">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>nRF52 C++ Firmware (IS31FL3733 + VEML7700)</h2>
+            <p>Drives the 48 passive RGB LEDs over I²C, auto-scales current from room lux, enters ~4&nbsp;µA shutdown in pitch darkness, and sleeps at ~2&nbsp;µA between 30-second updates.</p>
+          </div>
+
+          <div class="code-shell">
+            <div class="code-toolbar">
+              <div class="code-tabs" role="tablist" aria-label="nRF52 firmware views">
+                <button type="button" class="code-tab is-active" role="tab" aria-selected="true" data-sol="nrf52" data-tab="palette">palette_config.h (live)</button>
+                <button type="button" class="code-tab" role="tab" aria-selected="false" data-sol="nrf52" data-tab="full">linear_clock_nrf52.ino</button>
+                <button type="button" class="code-tab" role="tab" aria-selected="false" data-sol="nrf52" data-tab="setup">Flash &amp; BLE guide</button>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn-secondary copy-code-btn" data-sol="nrf52" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;">Copy</button>
+                <a class="btn-primary" href="./solutions/nrf52/firmware/linear_clock_nrf52.ino" download style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">Download .ino</a>
+              </div>
+            </div>
+            <pre class="code-pre"><code id="code-viewer-nrf52"></code></pre>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====================================================================
+         TAB PANEL 2: RASPBERRY PI PICO 2 W SOLUTION (COMMITTED BUILD)
+         ==================================================================== -->
+    <div id="panel-raspberry" class="solution-panel" role="tabpanel" aria-labelledby="tab-raspberry" hidden>
+      <!-- Concept -->
+      <section class="section">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>Raspberry · Simplest modular DIY build</h2>
+            <div>
+              <p>No custom PCB required! Built entirely from off-the-shelf modules available in one shipment from <strong>Botland</strong>: a <strong>Raspberry Pi Pico 2 W</strong> running readable MicroPython, a cut-to-length <strong>WS2812B 144&nbsp;LED/m</strong> strip, a <strong>2× 18650 5V UPS</strong>, and a 4&nbsp;zł <code>IRLZ44N</code> MOSFET for night power cutoff.</p>
+              <p>Optimized for battery efficiency over sub-second accuracy — delivering <strong>~7–10 days</strong> unplugged on 2× 18650 cells.</p>
+            </div>
+          </div>
+
+          <div class="principles-grid">
+            <article class="principle-card">
+              <div class="principle-num">01 / CONTROLLER</div>
+              <h3>Raspberry Pi Pico 2 W (Eco Sleep)</h3>
+              <p>Underclocked to 48&nbsp;MHz with Wi-Fi OFF and <code>machine.lightsleep()</code> between 15-second updates (~1.8&nbsp;mA average). Edit colors anytime in Thonny via USB.</p>
+            </article>
+            <article class="principle-card">
+              <div class="principle-num">02 / RGB DIODES + MOSFET</div>
+              <h3>WS2812B 144&nbsp;LED/m + Night Cutoff</h3>
+              <p>Cutting the Botland strip to <strong>24 LEDs (167&nbsp;mm, 1/hr)</strong> halves idle quiescent drain, and an <code>IRLZ44N</code> MOSFET on <code>GP1</code> disconnects LED power during night sleep (23:00–07:00 = <strong>0&nbsp;mA</strong>).</p>
+            </article>
+            <article class="principle-card">
+              <div class="principle-num">03 / BATTERY + A1 CASE</div>
+              <h3>2× 18650 Pack + Single-Piece PETG</h3>
+              <p>Two 3400–3500&nbsp;mAh 18650 cells (~25&nbsp;Wh) inside a 250×56×52&nbsp;mm PETG shell that prints flat in one piece on a Bambu Lab A1 (256&nbsp;mm bed) with zero supports.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raspberry 3D PETG Case -->
+      <section id="raspberry-case" class="section section-stone">
+        <div class="container">
+          <div class="media-frame">
+            <img class="case-preview-img" src="./solutions/raspberry/assets/render-exploded.png" alt="Exploded assembly render of the 52 mm Raspberry Pi Pico W PETG enclosure" width="1400" height="788" loading="lazy" />
+          </div>
+
+          <div class="switcher-bar case-switcher" role="tablist" aria-label="Raspberry 3D enclosure views">
+            <button type="button" class="num-btn is-active" role="tab" aria-selected="true" data-img="./solutions/raspberry/assets/render-exploded.png" data-caption="Exploded view: front diffuser faceplate, 48-cell matte black light baffle, single-piece 250×56×52 mm PETG body, Pico W + 18650 shield, and rear backplate.">1 · Exploded render</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/raspberry/assets/render-rear.png" data-caption="Internal rear cavity: Pico W mounted on left standoffs, 18650 battery shield on right rails, WS2812B strip behind the baffle, and removable backplate.">2 · Rear &amp; internals</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/raspberry/assets/cad-assembly.png" data-caption="OpenSCAD parametric CAD assembly (250 × 56 × 52 mm) — manifold geometry ready for Bambu Studio.">3 · CAD assembly</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/raspberry/assets/cad-exploded.png" data-caption="OpenSCAD exploded CAD showing internal M3 bosses, Pico W standoffs, 48-tunnel baffle grid, and rear cutouts.">4 · CAD exploded</button>
+            <button type="button" class="num-btn" role="tab" aria-selected="false" data-img="./solutions/raspberry/assets/cad-back.png" data-caption="OpenSCAD rear backplate detail: 3 tactile button holes, USB-C charging port, power slide switch, and vent slots.">5 · CAD backplate</button>
+          </div>
+
+          <div class="caption-row">
+            <h2>52&nbsp;mm modular PETG case (Raspberry)</h2>
+            <div>
+              <p class="case-caption">Exploded view: front diffuser faceplate, 48-cell matte black light baffle, single-piece 250×56×52 mm PETG body, Pico W + 18650 shield, and rear backplate.</p>
+              <p>Sized to <strong>250 × 56 × 52&nbsp;mm</strong> with integrated standoffs for the Raspberry Pi Pico W and retention rails for the 18650 battery shield — prints flat in one piece on a Bambu Lab A1 (~145&nbsp;g PETG, ~4h 10m, zero supports).</p>
+            </div>
+          </div>
+
+          <div class="split-grid">
+            <div class="info-panel">
+              <h3>Bambu Lab A1 — PETG Print Profile</h3>
+              <div class="table-wrap" style="margin-block-start: 0;">
+                <table>
+                  <tbody>
+                    <tr><th>Dimensions</th><td><strong>250 × 56 × 52&nbsp;mm</strong> (single-piece on A1)</td></tr>
+                    <tr><th>Plate / Nozzle</th><td>Textured PEI @ <strong>70&nbsp;°C</strong> · 0.4&nbsp;mm @ <strong>255&nbsp;°C</strong></td></tr>
+                    <tr><th>Layers / Infill</th><td><strong>0.20&nbsp;mm</strong> · 3 walls · 15% Gyroid · <strong>Zero supports</strong></td></tr>
+                    <tr><th>Print Time</th><td>~4h 10m total (~145&nbsp;g PETG)</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <h3>Download Raspberry CAD &amp; STL Files</h3>
+              <ul class="download-list">
+                <li class="download-item">
+                  <div><div class="mono"><strong>01_main_body.stl</strong></div><div class="download-meta">250×56×52&nbsp;mm modular shell · Slate-Grey PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/raspberry/cad/stl/01_main_body.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>02_led_baffle.stl</strong></div><div class="download-meta">48-segment light isolation grid · Black PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/raspberry/cad/stl/02_led_baffle.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>03_diffuser_faceplate.stl</strong></div><div class="download-meta">0.8&nbsp;mm diffuser + scale · White/Black PETG</div></div>
+                  <a class="btn-secondary" href="./solutions/raspberry/cad/stl/03_diffuser_faceplate.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>04_backplate.stl</strong></div><div class="download-meta">USB-C, power switch &amp; 3-button rear panel</div></div>
+                  <a class="btn-secondary" href="./solutions/raspberry/cad/stl/04_backplate.stl" download>Download STL</a>
+                </li>
+                <li class="download-item">
+                  <div><div class="mono"><strong>linear_clock_case.scad</strong></div><div class="download-meta">Parametric OpenSCAD source (Pico W + Shield)</div></div>
+                  <a class="btn-primary" href="./solutions/raspberry/cad/linear_clock_case.scad" download>Download SCAD</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raspberry Wiring Plan -->
+      <section id="raspberry-wiring" class="section">
+        <div class="container">
+          <div class="schematic-box" aria-label="Raspberry Pi Pico W wiring schematic">
+            <svg viewBox="0 0 1120 450" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wiring plan connecting 18650 Battery Shield, Raspberry Pi Pico 2 W, WS2812B strip, IRLZ44N night cutoff MOSFET, 330 ohm resistor, 470 uF capacitor, and 3 tactile buttons">
+              <rect width="1120" height="450" fill="#ffffff" />
+              <rect x="60" y="34" width="1000" height="68" fill="#f7f7f6" stroke="#222222" stroke-width="2" />
+              <text x="80" y="60" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">WS2812B 144 LED/m RGB Strip (Cut to 24 LEDs for ~1-Week Battery, or 48 LEDs)</text>
+              <g transform="translate(80, 72)">
+                <rect x="0" y="0" width="18" height="16" fill="#00d26a" /><rect x="24" y="0" width="18" height="16" fill="#1fd660" />
+                <rect x="48" y="0" width="18" height="16" fill="#4edb55" /><rect x="72" y="0" width="18" height="16" fill="#82df48" />
+                <rect x="96" y="0" width="18" height="16" fill="#b7de3b" /><rect x="120" y="0" width="18" height="16" fill="#e5ce31" />
+                <rect x="144" y="0" width="18" height="16" fill="#f5b22b" /><rect x="168" y="0" width="18" height="16" fill="#f5862e" />
+                <rect x="192" y="0" width="18" height="16" fill="#2b2b2e" /><rect x="216" y="0" width="18" height="16" fill="#2b2b2e" />
+                <text x="252" y="13" font-family="JetBrains Mono, monospace" font-size="12" fill="#555555">Only 3 solder pads (+5V, DIN, GND) on the input end</text>
+              </g>
+              <circle cx="110" cy="102" r="5" fill="#d92d20" />
+              <circle cx="240" cy="102" r="5" fill="#1570ef" />
+              <circle cx="370" cy="102" r="5" fill="#111111" />
+              <rect x="60" y="210" width="265" height="190" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
+              <text x="80" y="238" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#000000">2× 18650 5V UPS / Shield</text>
+              <text x="80" y="258" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#444444">Built-in charger + 5V 2A boost</text>
+              <rect x="85" y="276" width="190" height="46" rx="4" fill="#2c6fbb" stroke="#1b497d" stroke-width="1.5" />
+              <text x="115" y="304" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600" fill="#ffffff">2× 18650 6800 mAh</text>
+              <rect x="80" y="340" width="84" height="26" fill="#222222" />
+              <text x="93" y="357" font-family="JetBrains Mono, monospace" font-size="11" fill="#ffffff">USB-C IN</text>
+              <rect x="176" y="340" width="100" height="26" fill="#ffffff" stroke="#222222" />
+              <text x="188" y="357" font-family="JetBrains Mono, monospace" font-size="11" fill="#000000">ON/OFF SW</text>
+              <rect x="445" y="195" width="310" height="210" fill="#e9f5ee" stroke="#1b6b3a" stroke-width="2" />
+              <text x="465" y="224" font-family="Inter, sans-serif" font-size="15" font-weight="700" fill="#114b27">Raspberry Pi Pico 2 W / Pico W</text>
+              <text x="465" y="244" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#235c39">MicroPython · 48 MHz · lightsleep (~1.8 mA)</text>
+              <text x="458" y="276" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#000000">Pin 40 · VBUS (5V)</text>
+              <text x="458" y="310" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#1570ef">Pin 1  · GP0 (LED DATA)</text>
+              <text x="458" y="344" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#0e9384">Pin 2  · GP1 (MOSFET GATE)</text>
+              <text x="458" y="382" font-family="JetBrains Mono, monospace" font-size="12" font-weight="600" fill="#000000">Pin 38 · GND</text>
+              <rect x="855" y="220" width="205" height="185" fill="#f2f1f0" stroke="#222222" stroke-width="2" />
+              <text x="873" y="248" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#000000">3× Rear Tactile Buttons</text>
+              <text x="873" y="295" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 1 · Mode / Wake</text>
+              <text x="873" y="333" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 2 · Brightness</text>
+              <text x="873" y="371" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#000000">BTN 3 · Color / +15m</text>
+              <path d="M 325 246 L 395 246 L 395 148 L 110 148 L 110 102" stroke="#d92d20" stroke-width="3" fill="none" />
+              <path d="M 395 246 L 418 246 L 418 272 L 445 272" stroke="#d92d20" stroke-width="3" fill="none" />
+              <line x1="175" y1="148" x2="175" y2="168" stroke="#d92d20" stroke-width="2" />
+              <rect x="155" y="168" width="40" height="22" fill="#222222" />
+              <text x="160" y="183" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffffff">470µF</text>
+              <line x1="175" y1="190" x2="175" y2="206" stroke="#111111" stroke-width="2" />
+              <path d="M 175 206 L 370 206 L 370 102" stroke="#111111" stroke-width="2.5" fill="none" />
+              <path d="M 325 378 L 445 378" stroke="#111111" stroke-width="3" fill="none" />
+              <path d="M 370 378 L 370 356" stroke="#111111" stroke-width="3" fill="none" />
+              <rect x="336" y="324" width="68" height="32" fill="#e6f7f5" stroke="#0e9384" stroke-width="1.8" />
+              <text x="342" y="338" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#0b6e63">IRLZ44N</text>
+              <text x="342" y="350" font-family="JetBrains Mono, monospace" font-size="9" fill="#0b6e63">Night Cut</text>
+              <path d="M 370 324 L 370 206" stroke="#111111" stroke-width="3" fill="none" />
+              <path d="M 445 340 L 404 340" stroke="#0e9384" stroke-width="2.5" fill="none" />
+              <path d="M 445 306 L 410 306 L 410 176 L 308 176" stroke="#1570ef" stroke-width="3" fill="none" />
+              <rect x="256" y="165" width="52" height="22" fill="#fff4ed" stroke="#b93815" stroke-width="1.8" />
+              <text x="263" y="180" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600" fill="#b93815">330 Ω</text>
+              <path d="M 256 176 L 240 176 L 240 102" stroke="#1570ef" stroke-width="3" fill="none" />
+              <path d="M 755 272 L 855 291" stroke="#7a5af8" stroke-width="2.2" fill="none" />
+              <path d="M 755 312 L 855 329" stroke="#7a5af8" stroke-width="2.2" fill="none" />
+              <path d="M 755 352 L 855 367" stroke="#7a5af8" stroke-width="2.2" fill="none" />
+              <path d="M 755 384 L 855 384" stroke="#111111" stroke-width="2.2" stroke-dasharray="5 3" fill="none" />
+            </svg>
+          </div>
+
+          <div class="caption-row">
+            <h2>1-week battery wiring (~7–10 days)</h2>
+            <p><strong>24h Power Budget (2× 18650 = 6800 mAh → ~4160 mAh @ 5V):</strong> 16h daytime (~29&nbsp;mA at 10% Eco brightness on 24 LEDs) + 8h night MOSFET cutoff (~1.8&nbsp;mA Pico lightsleep) = <strong>~20&nbsp;mA daily average</strong> → <strong>~8.3 days</strong> per charge.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raspberry Botland BOM -->
+      <section id="raspberry-bom" class="section section-stone">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>Parts to buy — 100% Botland (Poland)</h2>
+            <p>Everything below can be ordered in a single shipment from <strong>Botland (`botland.com.pl`)</strong> — zero custom PCB required.</p>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Component</th><th>Compatible Spec</th><th>Qty</th><th>Est. PLN</th><th>Botland Link</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Raspberry Pi Pico 2 W</strong></td>
+                  <td>RP2350 microcontroller (~1.8&nbsp;mA in <code>lightsleep()</code>).</td>
+                  <td>1</td>
+                  <td class="mono">~35&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/moduly-i-zestawy-do-raspberry-pi-pico-2/25727-raspberry-pi-pico-2-w-rp2350-arm-cortex-m33-cyw43439-wifibluetooth-5056561803975.html" target="_blank" rel="noopener">Botland →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>WS2812B 144&nbsp;LED/m Strip</strong></td>
+                  <td>Cut to <strong>24 LEDs (167&nbsp;mm)</strong> for ~8–10 days, or 48 LEDs.</td>
+                  <td>1&nbsp;m</td>
+                  <td class="mono">~55&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/paski-led-adresowane/5814-pasek-led-rgb-ws2812b-cyfrowy-adresowany-ip65-144-ledm-43wm-5v-1m-5904422374655.html" target="_blank" rel="noopener">Botland →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>2× 18650 5V UPS / Shield</strong></td>
+                  <td>Waveshare 18306 (2× 18650) or budget 1× 18650 Shield.</td>
+                  <td>1</td>
+                  <td class="mono">~35–95&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/raspberry-pi-hat-nakladki-zasilajace/19046-zasilacz-awaryjny-ups-nakladka-zasilajaca-do-raspberry-pi-5-v-waveshare-18306-5904422367039.html" target="_blank" rel="noopener">2× UPS →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/arduino-shield-rozszerzenia/29327-battery-18650-shield-nakladka-power-bank-do-arduino-5904257821034.html" target="_blank" rel="noopener">1× Shield →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>2× 18650 Li-Ion Cells</strong></td>
+                  <td>Samsung <code>INR18650-35E</code> (3400&nbsp;mAh) or XTAR 3500&nbsp;mAh.</td>
+                  <td>2</td>
+                  <td class="mono">~44&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/akumulatory-li-ion/15216-ogniwo-18650-li-ion-samsung-inr18650-35e-3400mah-5904422343071.html" target="_blank" rel="noopener">Samsung →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/akumulatory-li-ion/10934-ogniwo-18650-li-ion-xtar-3500mah-6952918340690.html" target="_blank" rel="noopener">XTAR →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>IRLZ44N MOSFET + Passives</strong></td>
+                  <td>3.3V logic-level N-MOSFET + 330&nbsp;Ω, 10&nbsp;kΩ, 470&nbsp;µF, 3× Tact Switch 6×6&nbsp;mm.</td>
+                  <td>1 set</td>
+                  <td class="mono">~17&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/szukaj?s=IRLZ44N" target="_blank" rel="noopener">MOSFET →</a> <a class="btn-secondary" style="margin-block-start:0.35rem;" href="https://botland.com.pl/79-tact-switch" target="_blank" rel="noopener">Buttons →</a></td>
+                </tr>
+                <tr>
+                  <td><strong>PETG Filament (1.75&nbsp;mm)</strong></td>
+                  <td>Slate-Grey, Matte Black (baffle), Natural White (~145&nbsp;g used).</td>
+                  <td>~145&nbsp;g</td>
+                  <td class="mono">~15&nbsp;zł</td>
+                  <td><a class="btn-secondary" href="https://botland.com.pl/849-filamenty-petg" target="_blank" rel="noopener">Botland PETG →</a></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3">Estimated Total Build Cost from Botland</td>
+                  <td class="mono" colspan="2">~200 – 260&nbsp;zł</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raspberry MicroPython Firmware -->
+      <section id="raspberry-firmware" class="section">
+        <div class="container">
+          <div class="caption-row" style="margin-block-start: 0;">
+            <h2>Raspberry MicroPython Firmware (main.py)</h2>
+            <p>Drop a single readable Python file onto your Pico 2 W in <a href="https://thonny.org/" target="_blank" rel="noopener">Thonny</a>. Edit any RGB tuple or schedule block and hit Save.</p>
+          </div>
+
+          <div class="code-shell">
+            <div class="code-toolbar">
+              <div class="code-tabs" role="tablist" aria-label="Raspberry firmware views">
+                <button type="button" class="code-tab is-active" role="tab" aria-selected="true" data-sol="raspberry" data-tab="palette">palette_config.py (live)</button>
+                <button type="button" class="code-tab" role="tab" aria-selected="false" data-sol="raspberry" data-tab="full">firmware/main.py</button>
+                <button type="button" class="code-tab" role="tab" aria-selected="false" data-sol="raspberry" data-tab="setup">5-minute flash guide</button>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn-secondary copy-code-btn" data-sol="raspberry" style="padding: 0.35rem 0.8rem; font-size: 0.8rem;">Copy</button>
+                <a class="btn-primary" href="./solutions/raspberry/firmware/main.py" download style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">Download main.py</a>
+              </div>
+            </div>
+            <pre class="code-pre"><code id="code-viewer-raspberry"></code></pre>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-inner">
       <div>
-        <strong>linear clock diy</strong> — Open-source hardware &amp; Bambu Lab A1 PETG enclosure.<br />
+        <strong>linear clock diy</strong> — Open-source <strong>nRF52</strong> &amp; <strong>Raspberry Pi</strong> builds with Bambu Lab A1 PETG enclosures.<br />
         Visual design &amp; concept inspired by <a href="https://daylightmachines.com/products/linear-clock/" target="_blank" rel="noopener">daylight machines</a> (Copenhagen).
       </div>
       <div style="display: flex; gap: 1.25rem; flex-wrap: wrap;">
-        <a href="./cad/linear_clock_case.scad" download>OpenSCAD Source</a>
-        <a href="./firmware/main.py" download>MicroPython Firmware</a>
+        <a href="#nrf52" id="footer-nrf52">nRF52 Solution</a>
+        <a href="#raspberry" id="footer-rpi">Raspberry Solution</a>
         <a href="#top">Back to top ↑</a>
       </div>
     </div>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Linear Clock DIY — Interactive Simulator, Gallery & Live Firmware Config
+   Linear Clock DIY — Dual-Solution Controller (nRF52 default | Raspberry)
    ========================================================================== */
 
 (() => {
@@ -21,68 +21,102 @@
   ];
 
   const SCHEDULE_BLOCKS = [
-    { start: 0,  end: 6,  label: "Sleep",     rgb: [0, 175, 255] },
-    { start: 6,  end: 12, label: "Deep Work", rgb: [0, 220, 110] },
-    { start: 12, end: 18, label: "Afternoon", rgb: [255, 180, 30] },
-    { start: 18, end: 24, label: "Evening",   rgb: [245, 40, 85] },
+    { start: 0,  end: 6,  rgb: [0, 175, 255] },
+    { start: 6,  end: 12, rgb: [0, 220, 110] },
+    { start: 12, end: 18, rgb: [255, 180, 30] },
+    { start: 18, end: 24, rgb: [245, 40, 85] },
   ];
 
   const MODE_INFO = {
-    gradient: {
-      title: "1 · Color gradient mode",
-      desc: "Time fills smoothly from midnight emerald to midday lime, afternoon amber, and evening coral. Each 30-minute block brightens gradually minute by minute so a single glance tells you both the time and your day's rhythm."
-    },
-    fixed: {
-      title: "2 · Fixed color mode",
-      desc: "Pick any single hue from the accent swatches above (or define any RGB tuple in main.py). Elapsed 30-minute segments glow steadily while the active segment fades in smoothly."
-    },
-    monochrome: {
-      title: "3 · Monochrome mode",
-      desc: "A calm, warm daylight-white progress bar that blends into minimalist Scandinavian workspaces without adding color clutter."
-    },
-    calm: {
-      title: "4 · Calm mode (ultra-low power)",
-      desc: "Lights only the current 30-minute block with a gentle halo on its neighbors — ideal for nightstands or stretching a single 18650 battery charge to 5+ days."
-    },
-    schedule: {
-      title: "5 · Personal schedule mode",
-      desc: "Map your daily routine into distinct color blocks: cyan for 00:00–06:00 rest, green for 06:00–12:00 deep work, amber for 12:00–18:00 meetings, and coral for 18:00–24:00 wind-down. Upcoming blocks stay softly lit as a preview."
-    },
-    sun: {
-      title: "6 · Sunrise / Sunset mode",
-      desc: "Visualizes golden daylight hours (06:30–19:30) against deep indigo night hours, with a crisp white marker pinpointing the current 30-minute block so you see remaining daylight at a glance."
-    }
+    gradient:   { title: "1 · Color gradient mode", desc: "Time fills smoothly from midnight emerald to midday lime, afternoon amber, and evening coral. Each 30-minute block brightens gradually minute by minute." },
+    fixed:      { title: "2 · Fixed color mode", desc: "Pick any single hue from the accent swatches above or define custom RGB tuples in firmware." },
+    monochrome: { title: "3 · Monochrome mode", desc: "A calm, warm daylight-white progress bar that blends into minimalist Scandinavian workspaces." },
+    calm:       { title: "4 · Calm mode (max battery)", desc: "Lights only the current block with a gentle halo on its neighbors — stretching nRF52 to 4+ months and Raspberry to ~10+ days." },
+    schedule:   { title: "5 · Personal schedule mode", desc: "Color-codes your daily routine: cyan for 00:00–06:00 rest, green for 06:00–12:00 deep work, amber for 12:00–18:00 meetings, and coral for 18:00–24:00 evening." },
+    sun:        { title: "6 · Sunrise / Sunset mode", desc: "Maps golden daylight hours (06:30–19:30) against deep indigo night hours with a bright white marker at the current time." },
   };
 
-  // --- State ---
+  // --- Global State ---
+  let activeSolution = "nrf52"; // Default open tab: nRF52!
   let activeMode = "gradient";
-  let minutesOfDay = 930; // 15:30 default (matches Daylight Machines hero!)
-  let brightnessPct = 10; // Eco default for ~1-week runtime
-  let ecoMode = true;     // 24-LED Eco + 8h Night MOSFET cutoff + lightsleep
+  let minutesOfDay = 930;       // 15:30
+  let ambientLux = 80;          // nRF52 VEML7700 lux
+  let rpiBrightPct = 10;        // Raspberry Eco PWM %
+  let rpiEcoMode = true;        // Raspberry 24-LED + 8h MOSFET night cut
   let activeColorIdx = 0;
   let liveTimer = null;
-  let activeCodeTab = "palette";
+
+  const codeTabs = { nrf52: "palette", raspberry: "palette" };
+  const codeCache = { nrf52: null, raspberry: null };
 
   // --- DOM Refs ---
-  const hoursEl     = document.getElementById("clock-hours");
-  const ticksEl     = document.getElementById("clock-ticks");
-  const ledsEl      = document.getElementById("clock-leds");
-  const timeSlider  = document.getElementById("time-slider");
-  const timeReadout = document.getElementById("time-readout");
-  const brightSlider= document.getElementById("bright-slider");
-  const ecoToggle   = document.getElementById("eco-toggle");
-  const battReadout = document.getElementById("battery-readout");
-  const colorReadout= document.getElementById("color-readout");
-  const swatchRow   = document.getElementById("swatch-row");
-  const liveBtn     = document.getElementById("live-btn");
-  const modeTitle   = document.getElementById("mode-title");
-  const modeDesc    = document.getElementById("mode-desc");
-  const codeViewer  = document.getElementById("code-viewer");
-  const copyBtn     = document.getElementById("copy-code-btn");
+  const hoursEl       = document.getElementById("clock-hours");
+  const ticksEl       = document.getElementById("clock-ticks");
+  const ledsEl        = document.getElementById("clock-leds");
+  const timeSlider    = document.getElementById("time-slider");
+  const timeReadout   = document.getElementById("time-readout");
+  const luxSlider     = document.getElementById("lux-slider");
+  const nrf52Readout  = document.getElementById("nrf52-batt-readout");
+  const alsHint       = document.getElementById("als-hint");
+  const brightSlider  = document.getElementById("bright-slider");
+  const ecoToggle     = document.getElementById("eco-toggle");
+  const rpiReadout    = document.getElementById("rpi-batt-readout");
+  const ctrlNrf52     = document.getElementById("ctrl-nrf52");
+  const ctrlRaspberry = document.getElementById("ctrl-raspberry");
+  const colorReadout  = document.getElementById("color-readout");
+  const swatchRow     = document.getElementById("swatch-row");
+  const liveBtn       = document.getElementById("live-btn");
+  const modeTitle     = document.getElementById("mode-title");
+  const modeDesc      = document.getElementById("mode-desc");
 
   const ledNodes = [];
 
-  // --- Build Clock Scale & 48 LED Nodes ---
+  // --- Solution Tab Switching (nRF52 default | Raspberry) ---
+  function setSolution(sol, updateHash = false) {
+    if (sol !== "nrf52" && sol !== "raspberry") sol = "nrf52";
+    activeSolution = sol;
+
+    document.querySelectorAll(".solution-tab").forEach((btn) => {
+      btn.setAttribute("aria-selected", String(btn.dataset.solution === sol));
+    });
+
+    document.getElementById("panel-nrf52").hidden = (sol !== "nrf52");
+    document.getElementById("panel-raspberry").hidden = (sol !== "raspberry");
+
+    ctrlNrf52.hidden = (sol !== "nrf52");
+    ctrlRaspberry.hidden = (sol !== "raspberry");
+
+    // Update top nav anchors to jump cleanly into the active tab's sections
+    document.getElementById("nav-case-link").href = `#${sol}-case`;
+    document.getElementById("nav-wiring-link").href = `#${sol}-wiring`;
+    document.getElementById("nav-bom-link").href = `#${sol}-bom`;
+    document.getElementById("nav-fw-link").href = `#${sol}-firmware`;
+
+    if (updateHash && history.replaceState) {
+      history.replaceState(null, "", `#${sol}`);
+    }
+
+    renderClock();
+    updateCodeView("nrf52");
+    updateCodeView("raspberry");
+  }
+
+  document.querySelectorAll(".solution-tab").forEach((btn) => {
+    btn.addEventListener("click", () => setSolution(btn.dataset.solution, true));
+  });
+
+  document.getElementById("footer-nrf52")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    setSolution("nrf52", true);
+    document.getElementById("solutions").scrollIntoView({ behavior: "smooth" });
+  });
+  document.getElementById("footer-rpi")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    setSolution("raspberry", true);
+    document.getElementById("solutions").scrollIntoView({ behavior: "smooth" });
+  });
+
+  // --- Build Clock Face ---
   function initClockFace() {
     for (let h = 0; h <= 24; h++) {
       const span = document.createElement("span");
@@ -117,14 +151,14 @@
           setMode("fixed");
         } else {
           renderClock();
-          updateCodeView();
+          updateCodeView("nrf52");
+          updateCodeView("raspberry");
         }
       });
       swatchRow.appendChild(btn);
     });
   }
 
-  // --- Color Helpers (matches firmware/main.py math 1:1) ---
   function lerpColor(c1, c2, t) {
     return [
       Math.round(c1[0] + (c2[0] - c1[0]) * t),
@@ -162,8 +196,14 @@
     const exactBlock = minutesOfDay / 30;
     const fullBlocks = Math.floor(exactBlock);
     const partialFrac = exactBlock - fullBlocks;
-    const visualGain = 0.45 + (brightnessPct / 50) * 0.55;
-    let totalChannelIntensity = 0;
+    const isPitchDark = (activeSolution === "nrf52" && ambientLux < 2);
+
+    const visualGain = activeSolution === "nrf52"
+      ? (isPitchDark ? 0 : 0.42 + (ambientLux / 400) * 0.58)
+      : (0.45 + (rpiBrightPct / 40) * 0.55);
+
+    let activeChannelSum = 0;
+    let rpiChannelSum = 0;
 
     for (let i = 0; i < NUM_LEDS; i++) {
       const posRatio = i / (NUM_LEDS - 1);
@@ -171,37 +211,34 @@
       let rgb = [0, 0, 0];
       let intensity = 0;
 
-      if (activeMode === "gradient") {
-        rgb = sampleGradient(posRatio);
-        if (i < fullBlocks) intensity = 1;
-        else if (i === fullBlocks) intensity = 0.14 + 0.86 * partialFrac;
-      } else if (activeMode === "fixed") {
-        rgb = FIXED_COLORS[activeColorIdx].rgb;
-        if (i < fullBlocks) intensity = 1;
-        else if (i === fullBlocks) intensity = 0.14 + 0.86 * partialFrac;
-      } else if (activeMode === "monochrome") {
-        rgb = [255, 232, 195];
-        if (i < fullBlocks) intensity = 0.9;
-        else if (i === fullBlocks) intensity = 0.16 + 0.84 * partialFrac;
-      } else if (activeMode === "calm") {
-        rgb = FIXED_COLORS[activeColorIdx].rgb;
-        const dist = Math.abs(i - exactBlock);
-        if (dist < 1.5) intensity = Math.max(0, 1 - dist / 1.5);
-      } else if (activeMode === "schedule") {
-        rgb = scheduleColorForHour(segHour);
-        if (i < fullBlocks) intensity = 1;
-        else if (i === fullBlocks) intensity = 0.22 + 0.78 * partialFrac;
-        else intensity = 0.13;
-      } else if (activeMode === "sun") {
-        const isDay = segHour >= 6.5 && segHour < 19.5;
-        rgb = isDay ? [255, 195, 70] : [45, 85, 195];
-        if (i === fullBlocks) {
-          rgb = [255, 255, 255];
-          intensity = 1;
-        } else if (i < fullBlocks) {
-          intensity = 0.82;
-        } else {
-          intensity = 0.18;
+      if (!isPitchDark) {
+        if (activeMode === "gradient") {
+          rgb = sampleGradient(posRatio);
+          if (i < fullBlocks) intensity = 1;
+          else if (i === fullBlocks) intensity = 0.14 + 0.86 * partialFrac;
+        } else if (activeMode === "fixed") {
+          rgb = FIXED_COLORS[activeColorIdx].rgb;
+          if (i < fullBlocks) intensity = 1;
+          else if (i === fullBlocks) intensity = 0.14 + 0.86 * partialFrac;
+        } else if (activeMode === "monochrome") {
+          rgb = [255, 232, 195];
+          if (i < fullBlocks) intensity = 0.9;
+          else if (i === fullBlocks) intensity = 0.16 + 0.84 * partialFrac;
+        } else if (activeMode === "calm") {
+          rgb = FIXED_COLORS[activeColorIdx].rgb;
+          const dist = Math.abs(i - exactBlock);
+          if (dist < 1.5) intensity = Math.max(0, 1 - dist / 1.5);
+        } else if (activeMode === "schedule") {
+          rgb = scheduleColorForHour(segHour);
+          if (i < fullBlocks) intensity = 1;
+          else if (i === fullBlocks) intensity = 0.22 + 0.78 * partialFrac;
+          else intensity = 0.12;
+        } else if (activeMode === "sun") {
+          const isDay = segHour >= 6.5 && segHour < 19.5;
+          rgb = isDay ? [255, 195, 70] : [45, 85, 195];
+          if (i === fullBlocks) { rgb = [255, 255, 255]; intensity = 1; }
+          else if (i < fullBlocks) intensity = 0.82;
+          else intensity = 0.18;
         }
       }
 
@@ -213,33 +250,43 @@
         const b = Math.min(255, Math.round(rgb[2] * adj + 20 * (1 - adj)));
         node.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
         node.style.boxShadow = intensity > 0.2
-          ? `0 0 ${Math.round(6 + 10 * adj)}px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${(0.45 * adj).toFixed(2)})`
+          ? `0 0 ${Math.round(5 + 9 * adj)}px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${(0.42 * adj).toFixed(2)})`
           : "none";
-        totalChannelIntensity += ((rgb[0] + rgb[1] + rgb[2]) / 765) * intensity * (brightnessPct / 100);
+        activeChannelSum += ((rgb[0] + rgb[1] + rgb[2]) / 255) * intensity;
+        rpiChannelSum += ((rgb[0] + rgb[1] + rgb[2]) / 765) * intensity * (rpiBrightPct / 100);
       } else {
         node.style.backgroundColor = "#1e1e21";
         node.style.boxShadow = "none";
       }
     }
 
-    // Battery runtime estimate (2x Samsung 35E 18650 = 6800 mAh @ 3.6V -> ~4160 mAh usable @ 5V at 85% boost eff.)
-    const usableMah5V = 4160;
-    const activeLedMa48 = totalChannelIntensity * 60;
-    let avgDailyMa;
-    if (ecoMode) {
-      // 24 LEDs (half quiescent + half active LEDs), Pico 2 W lightsleep (~1.8 mA), 8h night MOSFET cutoff (0 mA LEDs)
-      const dayMa = 1.8 + (24 * 0.85) + (activeLedMa48 * 0.5);
-      const nightMa = 1.8;
-      avgDailyMa = (16 * dayMa + 8 * nightMa) / 24;
-    } else {
-      // 48 LEDs always powered, Pico W lightsleep (~2 mA)
-      avgDailyMa = 2.0 + (48 * 0.85) + activeLedMa48;
-    }
-    const estHours = Math.round(usableMah5V / avgDailyMa);
-    const runtimeStr = estHours >= 48 ? `~${(estHours / 24).toFixed(1)} days` : `~${estHours}h`;
-
     timeReadout.textContent = formatTime(minutesOfDay);
-    battReadout.textContent = `${brightnessPct}% · ${runtimeStr}`;
+
+    // 1. Update nRF52 Runtime Model (1x 18650 3400 mAh direct 3.7V, passive LEDs)
+    const perChannelMaxMa = 0.12 + (ambientLux / 400) * 1.08;
+    const ledMa = (activeChannelSum / 12) * perChannelMaxMa * 4.0;
+    const dayMa = isPitchDark ? 0.004 : (1.2 + ledMa);
+    const avgNrfMa = isPitchDark ? 0.004 : ((16 * dayMa + 8 * 0.004) / 24);
+    const estDays = Math.round(3400 / (avgNrfMa * 24));
+    if (isPitchDark) {
+      nrf52Readout.textContent = `${ambientLux} lux · Sleep (~4 µA)`;
+      alsHint.textContent = "Pitch dark (<2 lux) → IS31FL3733 hardware shutdown (SDB LOW)";
+    } else if (estDays >= 60) {
+      nrf52Readout.textContent = `${ambientLux} lux · ~${(estDays / 30).toFixed(1)} mos`;
+      alsHint.textContent = `1× 18650 (3400 mAh) · Avg ${avgNrfMa.toFixed(2)} mA/day (~${estDays} days)`;
+    } else {
+      nrf52Readout.textContent = `${ambientLux} lux · ~${estDays} days`;
+      alsHint.textContent = `1× 18650 (3400 mAh) · Avg ${avgNrfMa.toFixed(2)} mA/day`;
+    }
+
+    // 2. Update Raspberry Runtime Model (2x 18650 = 4160 mAh @ 5V, WS2812B + lightsleep)
+    const activeLedMa48 = rpiChannelSum * 60;
+    const avgRpiMa = rpiEcoMode
+      ? ((16 * (1.8 + 24 * 0.85 + activeLedMa48 * 0.5) + 8 * 1.8) / 24)
+      : (2.0 + 48 * 0.85 + activeLedMa48);
+    const estRpiHours = Math.round(4160 / avgRpiMa);
+    const rpiStr = estRpiHours >= 48 ? `~${(estRpiHours / 24).toFixed(1)} days` : `~${estRpiHours}h`;
+    rpiReadout.textContent = `${rpiBrightPct}% · ${rpiStr}`;
   }
 
   function setMode(mode) {
@@ -252,10 +299,10 @@
     modeTitle.textContent = MODE_INFO[mode].title;
     modeDesc.textContent = MODE_INFO[mode].desc;
     renderClock();
-    updateCodeView();
+    updateCodeView("nrf52");
+    updateCodeView("raspberry");
   }
 
-  // --- Mode Switcher Events ---
   document.querySelectorAll("#mode-switcher .num-btn").forEach((btn) => {
     btn.addEventListener("click", () => setMode(btn.dataset.mode));
   });
@@ -266,19 +313,23 @@
     renderClock();
   });
 
-  brightSlider.addEventListener("input", (e) => {
-    brightnessPct = Number(e.target.value);
+  luxSlider.addEventListener("input", (e) => {
+    ambientLux = Number(e.target.value);
     renderClock();
-    updateCodeView();
+    updateCodeView("nrf52");
   });
 
-  if (ecoToggle) {
-    ecoToggle.addEventListener("change", (e) => {
-      ecoMode = e.target.checked;
-      renderClock();
-      updateCodeView();
-    });
-  }
+  brightSlider.addEventListener("input", (e) => {
+    rpiBrightPct = Number(e.target.value);
+    renderClock();
+    updateCodeView("raspberry");
+  });
+
+  ecoToggle.addEventListener("change", (e) => {
+    rpiEcoMode = e.target.checked;
+    renderClock();
+    updateCodeView("raspberry");
+  });
 
   function stopLiveClock() {
     if (liveTimer) {
@@ -305,115 +356,113 @@
     }
   });
 
-  // --- 3D Case Gallery Switcher ---
-  const caseImg = document.getElementById("case-preview-img");
-  const caseCaption = document.getElementById("case-caption");
-  document.querySelectorAll("#case-switcher .num-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll("#case-switcher .num-btn").forEach((b) => {
-        const active = b === btn;
-        b.classList.toggle("is-active", active);
-        b.setAttribute("aria-selected", String(active));
+  // --- Independent 3D Case Gallery Switchers (one per solution panel) ---
+  document.querySelectorAll(".solution-panel").forEach((panel) => {
+    const imgEl = panel.querySelector(".case-preview-img");
+    const capEl = panel.querySelector(".case-caption");
+    const switcher = panel.querySelector(".case-switcher");
+    if (!switcher || !imgEl) return;
+    switcher.querySelectorAll(".num-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switcher.querySelectorAll(".num-btn").forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-selected", String(active));
+        });
+        imgEl.src = btn.dataset.img;
+        if (capEl) capEl.textContent = btn.dataset.caption;
       });
-      caseImg.src = btn.dataset.img;
-      caseCaption.textContent = btn.dataset.caption;
     });
   });
 
-  // --- Firmware Code Viewer ---
-  let cachedMainPy = null;
-
-  function buildLivePaletteSnippet() {
+  // --- Per-Solution Firmware Code Viewers ---
+  function buildLiveSnippet(sol) {
     const c = FIXED_COLORS[activeColorIdx];
     const modeIdx = ["gradient", "fixed", "monochrome", "calm", "schedule", "sun"].indexOf(activeMode);
-    return `# Live configuration synced from your simulator selection above
-# Paste these lines into firmware/main.py on your Raspberry Pi Pico 2 W
+    if (sol === "nrf52") {
+      const gcc = Math.max(6, Math.min(36, Math.round(6 + ambientLux * 0.08)));
+      return `// Live nRF52832 + IS31FL3733 config synced from simulator above
+uint8_t activeMode     = ${modeIdx};              // "${activeMode}"
+uint8_t globalCurrent  = ${gcc};             // IS31FL3733 GCC @ ${ambientLux} lux
 
-NUM_LEDS          = ${ecoMode ? 24 : 48}               # ${ecoMode ? "24 LEDs (144 LED/m = 167 mm) for ~8-10 day battery" : "48 LEDs (30-min blocks)"}
-USE_MOSFET_CUTOFF = ${ecoMode ? "True" : "False"}            # Cuts LED rail via GP1 IRLZ44N during 23:00-07:00
-NIGHT_SLEEP_START = 23               # 23:00 auto-off
-NIGHT_SLEEP_END   = 7                # 07:00 auto-wake
+const RGB PRIMARY_COLOR = { ${c.rgb[0]}, ${c.rgb[1]}, ${c.rgb[2]} }; // ${c.name} (${c.hex})`;
+    }
+    return `# Live Raspberry Pi Pico 2 W config synced from simulator above
+NUM_LEDS          = ${rpiEcoMode ? 24 : 48}               # ${rpiEcoMode ? "24 LEDs (144 LED/m = 167 mm) for ~8-10 day battery" : "48 LEDs (30-min blocks)"}
+USE_MOSFET_CUTOFF = ${rpiEcoMode ? "True" : "False"}            # Cuts LED rail via GP1 IRLZ44N (23:00-07:00)
 DEFAULT_MODE_IDX  = ${modeIdx}                # "${activeMode}"
-BRIGHTNESS        = ${(brightnessPct / 100).toFixed(2)}             # ${brightnessPct}% Eco PWM brightness
-
-# Active accent color (${c.name} · ${c.hex})
-PRIMARY_COLOR     = (${c.rgb[0]}, ${c.rgb[1]}, ${c.rgb[2]})
-
-# 24-hour Color Gradient stops (position 0.0..1.0, (R, G, B))
-GRADIENT_STOPS = [
-    (0.00, (0, 215, 115)),           # Midnight -> Morning (Emerald)
-    (0.45, (140, 225, 65)),          # Midday (Warm Lime)
-    (0.72, (255, 185, 45)),          # Afternoon (Golden Amber)
-    (1.00, (245, 65, 55)),           # Evening (Sunset Coral)
-]`;
+BRIGHTNESS        = ${(rpiBrightPct / 100).toFixed(2)}             # ${rpiBrightPct}% Eco PWM brightness
+PRIMARY_COLOR     = (${c.rgb[0]}, ${c.rgb[1]}, ${c.rgb[2]})    # ${c.name} (${c.hex})`;
   }
 
-  const SETUP_GUIDE = `# 5-Minute Raspberry Pi Pico W Setup
-# ----------------------------------
+  const SETUP_GUIDES = {
+    nrf52: `// Flashing & Wireless BLE Customization (nRF52832)
+1. Assemble the 240x38 mm 2-layer matte-black PCB (nRF52832, IS31FL3733, 48x 1615 RGB, VEML7700).
+2. Flash solutions/nrf52/firmware/linear_clock_nrf52.ino via SWD using Arduino IDE / PlatformIO.
+3. Snap 1x 18650 cell into the rear SMD clips and fasten the 36 mm PETG backplate.
+4. Hold BTN 1 (2s) anytime to wake BLE and push new palettes or sync exact time.`,
+    raspberry: `# 5-Minute Raspberry Pi Pico 2 W Setup (MicroPython)
+1. Hold BOOTSEL on your Pico 2 W and plug into USB (RPI-RP2 drive appears).
+2. Copy the official MicroPython UF2 from https://micropython.org/download/ onto RPI-RP2.
+3. Open Thonny (https://thonny.org/), open solutions/raspberry/firmware/main.py, and save to Pico as "main.py".
+4. Unplug USB, flip the 18650 UPS switch ON — press BTN 1/2/3 on the back to cycle modes, brightness & time!`
+  };
 
-1. Hold the white BOOTSEL button on your Raspberry Pi Pico W
-   and plug it into your computer via USB.
-   -> A removable drive named "RPI-RP2" appears.
-
-2. Download the official MicroPython UF2 for Pico W (or Pico 2 W)
-   from https://micropython.org/download/ and drag it onto RPI-RP2.
-   -> The board reboots automatically into MicroPython.
-
-3. Open Thonny (https://thonny.org/), select "MicroPython (Raspberry Pi Pico)"
-   in the bottom-right interpreter menu.
-
-4. Open firmware/main.py, enter your WIFI_SSID, WIFI_PASSWORD, and
-   UTC_OFFSET_HOURS (or leave blank to set time offline with Button 3).
-
-5. Save to Raspberry Pi Pico as "main.py".
-   Unplug USB, flip the 18650 Battery Shield switch ON — your linear clock
-   syncs time over Wi-Fi, turns off its radio to save battery, and lights up!`;
-
-  async function updateCodeView() {
-    if (activeCodeTab === "palette") {
-      codeViewer.textContent = buildLivePaletteSnippet();
-    } else if (activeCodeTab === "setup") {
-      codeViewer.textContent = SETUP_GUIDE;
+  async function updateCodeView(sol) {
+    const viewer = document.getElementById(`code-viewer-${sol}`);
+    if (!viewer) return;
+    const tab = codeTabs[sol];
+    if (tab === "palette") {
+      viewer.textContent = buildLiveSnippet(sol);
+    } else if (tab === "setup") {
+      viewer.textContent = SETUP_GUIDES[sol];
     } else {
-      if (cachedMainPy) {
-        codeViewer.textContent = cachedMainPy;
+      if (codeCache[sol]) {
+        viewer.textContent = codeCache[sol];
       } else {
-        codeViewer.textContent = "# Loading firmware/main.py ...";
+        viewer.textContent = "// Loading firmware source...";
+        const path = sol === "nrf52"
+          ? "./solutions/nrf52/firmware/linear_clock_nrf52.ino"
+          : "./solutions/raspberry/firmware/main.py";
         try {
-          const res = await fetch("./firmware/main.py");
-          cachedMainPy = await res.text();
-          if (activeCodeTab === "full") codeViewer.textContent = cachedMainPy;
+          const res = await fetch(path);
+          codeCache[sol] = await res.text();
+          if (codeTabs[sol] === "full") viewer.textContent = codeCache[sol];
         } catch {
-          codeViewer.textContent = "# Use the 'Download main.py' button above to inspect the full firmware file.";
+          viewer.textContent = "// Use the Download button above to inspect the full firmware file.";
         }
       }
     }
   }
 
-  document.querySelectorAll(".code-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      activeCodeTab = tab.dataset.tab;
-      document.querySelectorAll(".code-tab").forEach((t) => {
-        const active = t === tab;
-        t.classList.toggle("is-active", active);
-        t.setAttribute("aria-selected", String(active));
+  document.querySelectorAll(".code-tab").forEach((tabBtn) => {
+    tabBtn.addEventListener("click", () => {
+      const sol = tabBtn.dataset.sol;
+      codeTabs[sol] = tabBtn.dataset.tab;
+      document.querySelectorAll(`.code-tab[data-sol="${sol}"]`).forEach((b) => {
+        const active = b === tabBtn;
+        b.classList.toggle("is-active", active);
+        b.setAttribute("aria-selected", String(active));
       });
-      updateCodeView();
+      updateCodeView(sol);
     });
   });
 
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(codeViewer.textContent);
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => { copyBtn.textContent = "Copy"; }, 1600);
-    } catch {
-      copyBtn.textContent = "Select & Ctrl+C";
-    }
+  document.querySelectorAll(".copy-code-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const viewer = document.getElementById(`code-viewer-${btn.dataset.sol}`);
+      try {
+        await navigator.clipboard.writeText(viewer.textContent);
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = "Copy"; }, 1600);
+      } catch {
+        btn.textContent = "Ctrl+C";
+      }
+    });
   });
 
-  // --- Boot ---
+  // --- Boot (nRF52 open by default unless #raspberry hash specified) ---
   initClockFace();
-  renderClock();
-  updateCodeView();
+  const initialSol = window.location.hash === "#raspberry" ? "raspberry" : "nrf52";
+  setSolution(initialSol, false);
 })();

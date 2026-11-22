@@ -622,6 +622,98 @@ tfoot td {
   color: var(--ink-subtle);
 }
 
+/* --- Top-Level Solution Tabs (nRF52 default | Raspberry) --- */
+.solution-tabs-bar {
+  background-color: var(--bg);
+  border-block-end: 1px solid var(--border);
+}
+
+.solution-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.solution-tab {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 1.05rem 1.35rem;
+  background-color: var(--bg-stone);
+  color: var(--ink-muted);
+  border: none;
+  border-inline-end: 1px solid var(--border-light);
+  border-block-end: 3px solid transparent;
+  border-radius: 0;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.solution-tab:last-child {
+  border-inline-end: none;
+}
+
+.solution-tab:hover {
+  background-color: var(--bg);
+  color: var(--ink);
+}
+
+.solution-tab[aria-selected="true"] {
+  background-color: var(--bg);
+  color: var(--ink);
+  border-block-end-color: var(--ink);
+}
+
+.solution-tab-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.solution-tab-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.12rem 0.45rem;
+  background-color: var(--btn-bg);
+  color: var(--btn-ink);
+}
+
+.solution-tab[aria-selected="false"] .solution-tab-badge {
+  background-color: var(--btn-secondary-bg);
+  color: var(--ink-muted);
+}
+
+.solution-tab-sub {
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  color: var(--ink-subtle);
+}
+
+.solution-panel[hidden] {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .solution-tabs {
+    grid-template-columns: 1fr;
+  }
+  .solution-tab {
+    border-inline-end: none;
+    border-block-end: 1px solid var(--border-light);
+  }
+  .solution-tab[aria-selected="true"] {
+    border-block-end: 3px solid var(--ink);
+  }
+}
+
 /* --- Footer --- */
 .site-footer {
   border-block-start: 1px solid var(--border);
