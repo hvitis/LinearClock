@@ -1,0 +1,663 @@
+/* ==========================================================================
+   Linear Clock DIY — Stylesheet inspired by daylightmachines.com
+   Minimalist Scandinavian editorial design: Inter + IBM Plex Sans,
+   pure white (#ffffff), warm stone (#f2f1f0), crisp 0px architectural edges.
+   ========================================================================== */
+
+:root {
+  --bg: #ffffff;
+  --bg-stone: #f2f1f0;
+  --bg-dark: #161616;
+  --ink: #000000;
+  --ink-muted: #333333;
+  --ink-subtle: #666666;
+  --border: #cccccc;
+  --border-light: #e5e5e5;
+  --btn-bg: #222222;
+  --btn-ink: #ffffff;
+  --btn-secondary-bg: #dddddd;
+  --max-w: 1200px;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* --- Layout Container --- */
+.container {
+  inline-size: min(100% - 2rem, var(--max-w));
+  margin-inline: auto;
+}
+
+/* --- Header (daylightmachines.com style) --- */
+.site-header {
+  background-color: var(--bg);
+  border-block-end: 1px solid var(--border);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+}
+
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: safe center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.95rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.brand-mark {
+  inline-size: 22px;
+  block-size: 18px;
+  flex-shrink: 0;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.site-nav a {
+  text-decoration: none;
+  color: var(--ink);
+  transition: opacity 150ms ease;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  opacity: 0.6;
+  text-decoration: underline;
+}
+
+/* --- Hero Band --- */
+.hero {
+  background-color: var(--bg-stone);
+  padding-block: clamp(2rem, 4vw, 3.25rem);
+  border-block-end: 1px solid var(--border-light);
+}
+
+.hero h1 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 3.8vw, 2.55rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.hero-subtitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+  line-height: 1.35;
+  color: var(--ink-muted);
+  max-inline-size: 52ch;
+}
+
+/* --- Sections & Editorial Caption Row --- */
+.section {
+  padding-block: clamp(2.5rem, 5vw, 4.25rem);
+}
+
+.section-stone {
+  background-color: var(--bg-stone);
+  border-block: 1px solid var(--border-light);
+}
+
+.media-frame {
+  background-color: var(--bg-stone);
+  border: 1px solid var(--border-light);
+  overflow: clip;
+}
+
+.media-frame img {
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.caption-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr);
+  gap: clamp(1rem, 3vw, 2.5rem);
+  margin-block-start: 1.5rem;
+  align-items: start;
+}
+
+.caption-row h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.caption-row p {
+  margin: 0 0 0.9rem;
+  color: var(--ink-muted);
+}
+
+.caption-row p:last-child {
+  margin-block-end: 0;
+}
+
+/* --- 3-Column Principles Strip --- */
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-block-start: 2rem;
+  padding-block-start: 2rem;
+  border-block-start: 1px solid var(--border-light);
+}
+
+.principle-card {
+  background-color: var(--bg-stone);
+  padding: 1.35rem 1.4rem;
+  border: 1px solid var(--border-light);
+}
+
+.principle-num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-subtle);
+  margin-block-end: 0.45rem;
+}
+
+.principle-card h3 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.principle-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-muted);
+}
+
+/* --- Daylight Machines Numbered Square Switchers (1 2 3 4...) --- */
+.switcher-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 1.25rem;
+}
+
+.num-btn {
+  appearance: none;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.num-btn:hover {
+  border-color: var(--ink);
+}
+
+.num-btn[aria-pressed="true"],
+.num-btn[aria-selected="true"],
+.num-btn.is-active {
+  background-color: var(--btn-bg);
+  color: var(--btn-ink);
+  border-color: var(--btn-bg);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--btn-bg);
+  color: var(--btn-ink);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.86;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.6rem 1.1rem;
+  background-color: var(--btn-secondary-bg);
+  color: var(--ink);
+  border: 1px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--ink);
+}
+
+/* --- Interactive Linear Clock Hardware Simulator --- */
+.clock-stage {
+  container: clockstage / inline-size;
+  background: linear-gradient(180deg, #eceae7 0%, #dcd8d2 100%);
+  padding: clamp(1.5rem, 4vw, 3.25rem) clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid var(--border-light);
+}
+
+.clock-housing {
+  max-inline-size: 980px;
+  margin-inline: auto;
+  background: linear-gradient(180deg, #989fa8 0%, #7f8690 12%, #868d96 88%, #6d737c 100%);
+  padding: clamp(10px, 1.5cqi, 16px);
+  border-radius: 10px;
+  box-shadow:
+    0 22px 44px rgba(0, 0, 0, 0.22),
+    0 4px 10px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.clock-face {
+  background-color: #0d0d0f;
+  padding: clamp(10px, 1.6cqi, 18px) clamp(10px, 1.8cqi, 20px) clamp(12px, 1.8cqi, 20px);
+  border-radius: 5px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+.clock-hours {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr) auto;
+  color: #f0f0f0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(0.56rem, 1.35cqi, 0.92rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-block-end: 0.35rem;
+  user-select: none;
+}
+
+.clock-hours span {
+  transform: translateX(-35%);
+}
+
+.clock-hours span:first-child {
+  transform: translateX(-10%);
+}
+
+.clock-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  block-size: clamp(7px, 1.1cqi, 12px);
+  margin-block-end: clamp(6px, 0.9cqi, 10px);
+}
+
+.tick {
+  inline-size: 1.5px;
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+.tick.major {
+  block-size: 100%;
+}
+
+.tick.minor {
+  block-size: 52%;
+  opacity: 0.72;
+}
+
+.clock-leds {
+  display: grid;
+  grid-template-columns: repeat(48, 1fr);
+  gap: clamp(1.5px, 0.35cqi, 4px);
+}
+
+.led-seg {
+  aspect-ratio: 1 / 3.4;
+  background-color: #1e1e21;
+  border-radius: 1.5px;
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.clock-controls {
+  max-inline-size: 980px;
+  margin-inline: auto;
+  margin-block-start: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem 1.5rem;
+  background-color: var(--bg);
+  border: 1px solid var(--border-light);
+  padding: 1.1rem 1.25rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.control-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-subtle);
+}
+
+.control-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.range-input {
+  inline-size: 100%;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.swatch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.swatch-btn {
+  inline-size: 26px;
+  block-size: 26px;
+  border: 2px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch-btn.is-active {
+  border-color: var(--ink);
+  outline: 2px solid var(--bg);
+  outline-offset: -4px;
+}
+
+/* --- Print & Downloads 2-Col --- */
+.split-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-block-start: 2rem;
+}
+
+.info-panel {
+  background-color: var(--bg);
+  border: 1px solid var(--border-light);
+  padding: 1.5rem;
+}
+
+.info-panel h3 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* --- Tables (BOM, Print Settings, Pinout) --- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-light);
+  background-color: var(--bg);
+  margin-block-start: 1.5rem;
+}
+
+table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  text-align: start;
+}
+
+th,
+td {
+  padding: 0.85rem 1rem;
+  border-block-end: 1px solid var(--border-light);
+  vertical-align: top;
+}
+
+th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: var(--bg-stone);
+  color: var(--ink-muted);
+}
+
+tr:last-child td {
+  border-block-end: none;
+}
+
+tfoot td {
+  font-weight: 700;
+  background-color: var(--bg-stone);
+  border-block-start: 1px solid var(--border);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  padding: 0.15rem 0.45rem;
+  background-color: var(--bg-stone);
+  border: 1px solid var(--border);
+}
+
+/* --- Wiring Schematic Container --- */
+.schematic-box {
+  background-color: var(--bg);
+  border: 1px solid var(--border-light);
+  padding: clamp(1rem, 2.5vw, 2rem);
+  overflow-x: auto;
+}
+
+.schematic-box svg {
+  min-inline-size: 720px;
+  inline-size: 100%;
+}
+
+/* --- Code Block --- */
+.code-shell {
+  border: 1px solid var(--border);
+  background-color: #161618;
+  color: #f0f0f0;
+  margin-block-start: 1.25rem;
+}
+
+.code-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background-color: #222226;
+  border-block-end: 1px solid #333338;
+}
+
+.code-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.code-tab {
+  background: transparent;
+  color: #bbbbbb;
+  border: 1px solid transparent;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.code-tab.is-active {
+  color: #ffffff;
+  background-color: #36363c;
+  border-color: #55555d;
+}
+
+.code-pre {
+  margin: 0;
+  padding: 1.25rem;
+  overflow-x: auto;
+  max-block-size: 460px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  tab-size: 4;
+}
+
+/* --- STL Download List --- */
+.download-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.download-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background-color: var(--bg-stone);
+  border: 1px solid var(--border-light);
+}
+
+.download-meta {
+  font-size: 0.85rem;
+  color: var(--ink-subtle);
+}
+
+/* --- Footer --- */
+.site-footer {
+  border-block-start: 1px solid var(--border);
+  padding-block: 2.5rem;
+  background-color: var(--bg);
+  font-size: 0.9rem;
+  color: var(--ink-subtle);
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 780px) {
+  .caption-row {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  .site-nav {
+    gap: 1rem;
+    font-size: 0.88rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .led-seg,
+  .num-btn,
+  .site-nav a {
+    transition: none;
+  }
+}
